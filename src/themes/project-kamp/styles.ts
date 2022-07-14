@@ -1,3 +1,6 @@
+import member from 'src/assets/images/themes/project-kamp/badge.svg'
+import memberLowDetailBadge from 'src/assets/images/themes/project-kamp/avatar.svg'
+import logo from 'src/assets/images/themes/project-kamp/project-kamp-header.png'
 import type { ThemeWithName } from '../types'
 
 // use enum to specify list of possible colors for typing
@@ -31,8 +34,10 @@ export const zIndex = {
   logoContainer: 999,
   mapFlexBar: 2000,
   header: 3000,
-  modalBackdrop: 4000,
-  modalContent: 5000,
+}
+
+const fonts = {
+  body: `'Inter', Arial, sans-serif`,
 }
 
 export type ButtonVariants =
@@ -193,15 +198,109 @@ const typography = {
 
 const StyledComponentTheme: ThemeWithName = {
   name: 'Project Kamp',
+  profileGuidelinesURL:
+    'https://drive.google.com/file/d/1fXTtBbzgCO0EL6G9__aixwqc-Euqgqnd/view',
+  communityProgramURL:
+    'https://community.preciousplastic.com/academy/guides/community-program',
+  logo: logo,
+  badges: {
+    member: {
+      lowDetail: memberLowDetailBadge,
+      normal: member,
+    },
+  },
+  cards: {
+    primary: {
+      background: 'white',
+      border: `2px solid ${colors.black}`,
+      borderRadius: 1,
+      overflow: 'hidden',
+    },
+  },
   colors,
   buttons,
   breakpoints,
   space,
   radii,
   fontSizes,
+  fonts,
+  forms: {
+    input: {
+      background: colors.background,
+      borderRadius: 1,
+      border: '1px solid transparent',
+      fontFamily: `'Inter', Arial, sans-serif`,
+      fontSize: 1,
+      '&:focus': {
+        borderColor: colors.blue,
+        outline: 'none',
+        boxShadow: 'none',
+      },
+    },
+    inputOutline: {
+      background: 'white',
+      border: `2px solid ${colors.black}`,
+      borderRadius: 1,
+      '&:focus': {
+        borderColor: colors.blue,
+        outline: 'none',
+        boxShadow: 'none',
+      },
+    },
+    error: {
+      background: colors.background,
+      borderRadius: 1,
+      border: `1px solid ${colors.error}`,
+      fontFamily: `'Inter', Arial, sans-serif`,
+      fontSize: 1,
+      '&:focus': {
+        borderColor: colors.blue,
+        outline: 'none',
+        boxShadow: 'none',
+      },
+    },
+    textarea: {
+      background: colors.background,
+      border: `1px solid transparent`,
+      borderRadius: 1,
+      fontFamily: `'Inter', Arial, sans-serif`,
+      fontSize: 1,
+      padding: 2,
+      '&:focus': {
+        borderColor: colors.blue,
+        outline: 'none',
+        boxShadow: 'none',
+      },
+    },
+    textareaError: {
+      background: colors.background,
+      border: `1px solid ${colors.error}`,
+      borderRadius: 1,
+      fontFamily: `'Inter', Arial, sans-serif`,
+      fontSize: 1,
+      padding: 2,
+      '&:focus': {
+        borderColor: colors.blue,
+        outline: 'none',
+        boxShadow: 'none',
+      },
+    },
+  },
   maxContainerWidth,
   regular,
   bold,
+  text: {
+    heading: {
+      fontFamily: '"Varela Round", Arial, sans-serif',
+      fontSize: fontSizes[5],
+      fontWeight: 'normal',
+    },
+    small: {
+      fontFamily: '"Varela Round", Arial, sans-serif',
+      fontSize: fontSizes[4],
+      fontWeight: 'normal',
+    },
+  },
   typography,
   zIndex,
 }

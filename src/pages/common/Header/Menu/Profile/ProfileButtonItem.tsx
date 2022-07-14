@@ -1,11 +1,11 @@
 import * as React from 'react'
 import styled from '@emotion/styled'
-import { Link } from 'src/components/Links'
 import { Button } from 'oa-components'
 import type { DisplayProps } from 'styled-system'
 import { display } from 'styled-system'
 import { observer, inject } from 'mobx-react'
 import type { MobileMenuStore } from 'src/stores/MobileMenu/mobilemenu.store'
+import { Link } from 'react-router-dom'
 
 const ButtonSign = styled(Button as any)<DisplayProps>`
   ${display};
@@ -40,10 +40,9 @@ export class ProfileButtonItem extends React.Component<IProps> {
   }
   render() {
     const menu = this.injected.mobileMenuStore
-    console.log(`ProfileButtonItem`, this.props.sx)
     return (
       <>
-        <Link to={this.props.link} sx={{ minWidth: 'auto' }}>
+        <Link to={this.props.link} style={{ minWidth: 'auto' }}>
           <ButtonSign
             onClick={() => this.props.isMobile && menu.toggleMobilePanel()}
             variant={this.props.variant}

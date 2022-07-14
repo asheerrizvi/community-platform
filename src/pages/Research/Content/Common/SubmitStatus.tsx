@@ -1,11 +1,7 @@
 import { observer } from 'mobx-react'
 import type { RouteComponentProps } from 'react-router'
-import { Box, Flex } from 'theme-ui'
-import { Button } from 'oa-components'
-import Heading from 'src/components/Heading'
-import { Icon } from 'oa-components'
-import { Modal } from 'src/components/Modal/Modal'
-import Text from 'src/components/Text'
+import { Box, Flex, Text, Heading } from 'theme-ui'
+import { Button, Icon, Modal } from 'oa-components'
 import { useResearchStore } from 'src/stores/Research/research.store'
 
 interface IProps extends RouteComponentProps<any> {
@@ -16,10 +12,10 @@ export const ResearchSubmitStatus = observer((props: IProps) => {
   const store = useResearchStore()
   const uploadStatus = store.researchUploadStatus
 
-  return uploadStatus.Start ? (
-    <Modal>
+  return (
+    <Modal isOpen={!!uploadStatus.Start}>
       <Flex sx={{ justifyContent: 'space-between' }}>
-        <Heading small sx={{ textAlign: 'center' }}>
+        <Heading variant="small" sx={{ textAlign: 'center' }}>
           Uploading Research
         </Heading>
         <Icon
@@ -53,17 +49,17 @@ export const ResearchSubmitStatus = observer((props: IProps) => {
         View Research
       </Button>
     </Modal>
-  ) : null
+  )
 })
 
 export const UpdateSubmitStatus = observer((props: IProps) => {
   const store = useResearchStore()
   const uploadStatus = store.updateUploadStatus
 
-  return uploadStatus.Start ? (
-    <Modal>
+  return (
+    <Modal isOpen={!!uploadStatus.Start}>
       <Flex sx={{ justifyContent: 'space-between' }}>
-        <Heading small sx={{ textAlign: 'center' }}>
+        <Heading variant="small" sx={{ textAlign: 'center' }}>
           Uploading Update
         </Heading>
         <Icon
@@ -97,5 +93,5 @@ export const UpdateSubmitStatus = observer((props: IProps) => {
         View Research
       </Button>
     </Modal>
-  ) : null
+  )
 })

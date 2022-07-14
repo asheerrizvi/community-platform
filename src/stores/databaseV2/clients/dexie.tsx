@@ -1,7 +1,10 @@
 import type { IDBEndpoint, DBDoc } from 'src/models/common.models'
 import Dexie from 'dexie'
-import type { DBQueryOptions, DBQueryWhereOptions } from '../types'
-import type { AbstractDBClient } from '../types'
+import type {
+  DBQueryOptions,
+  DBQueryWhereOptions,
+  AbstractDBClient,
+} from '../types'
 import { DB_QUERY_DEFAULTS } from '../utils/db.utils'
 import { DB_ENDPOINTS } from '../endpoints'
 
@@ -10,7 +13,7 @@ import { DB_ENDPOINTS } from '../endpoints'
  * or busting cache on db. This is used as the Dexie version number, see:
  * https://dexie.org/docs/Tutorial/Design#database-versioning
  */
-const DB_CACHE_NUMBER = 20220202
+const DB_CACHE_NUMBER = 20220501
 const CACHE_DB_NAME = 'OneArmyCache'
 const db = new Dexie(CACHE_DB_NAME)
 
@@ -152,6 +155,7 @@ const SCHEMA_BASE: IDexieSchema = {
   howtos: `${DEFAULT_SCHEMA},slug`,
   mappins: DEFAULT_SCHEMA,
   tags: DEFAULT_SCHEMA,
+  categories: DEFAULT_SCHEMA,
   users: `${DEFAULT_SCHEMA},_authID`,
   research: `${DEFAULT_SCHEMA},slug`,
   aggregations: `${DEFAULT_SCHEMA}`,

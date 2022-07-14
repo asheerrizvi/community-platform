@@ -1,17 +1,15 @@
 import { format } from 'date-fns'
 import * as React from 'react'
-import { Box, Flex, Image } from 'theme-ui'
+import { Box, Flex, Image, Text, Heading } from 'theme-ui'
 import ArrowIcon from 'src/assets/icons/icon-arrow-select.svg'
-import { Button, FlagIconHowTos } from 'oa-components'
-import Heading from 'src/components/Heading'
-import { Link } from 'src/components/Links'
-import ModerationStatusText from 'src/components/ModerationStatusText'
-import Text from 'src/components/Text'
+import { Button, FlagIconHowTos, ModerationStatus } from 'oa-components'
 import type { IResearch } from 'src/models/research.models'
 import theme from 'src/themes/styled.theme'
 import type { IUser } from 'src/models/user.models'
 import { VerifiedUserBadge } from 'src/components/VerifiedUserBadge/VerifiedUserBadge'
 import { UsefulStatsButton } from 'src/components/UsefulStatsButton/UsefulStatsButton'
+import Linkify from 'react-linkify'
+import { Link } from 'react-router-dom'
 
 interface IProps {
   research: IResearch.ItemDB
@@ -65,6 +63,7 @@ const ResearchDescription: React.FC<IProps> = ({
             >
               <Flex>
                 <Image
+                  loading="lazy"
                   sx={{
                     width: '10px',
                     marginRight: '4px',
@@ -118,19 +117,27 @@ const ResearchDescription: React.FC<IProps> = ({
             {research.creatorCountry && (
               <FlagIconHowTos code={research.creatorCountry} />
             )}
-            <Text inline auxiliary my={2} ml={1}>
+            <Text
+              ml={1}
+              sx={{
+                ...theme.typography.auxiliary,
+                marginTop: 2,
+                marginBottom: 2,
+              }}
+            >
               <Flex sx={{ alignItems: 'center' }}>
                 By
-                <Link
-                  ml={1}
-                  mr={1}
-                  sx={{
-                    textDecoration: 'underline',
-                    color: 'inherit',
-                  }}
-                  to={'/u/' + research._createdBy}
-                >
-                  {research._createdBy}
+                <Link to={'/u/' + research._createdBy}>
+                  <Text
+                    ml={1}
+                    mr={1}
+                    sx={{
+                      textDecoration: 'underline',
+                      color: 'black',
+                    }}
+                  >
+                    {research._createdBy}
+                  </Text>
                 </Link>
                 <VerifiedUserBadge
                   userId={research._createdBy}
@@ -143,27 +150,34 @@ const ResearchDescription: React.FC<IProps> = ({
             </Text>
           </Flex>
           <Text
-            auxiliary
-            sx={{ color: `${theme.colors.lightgrey} !important` }}
+            sx={{
+              ...theme.typography.auxiliary,
+              color: `${theme.colors.lightgrey} !important`,
+            }}
             mt={1}
             mb={2}
           >
             {dateLastUpdateText(research)}
           </Text>
-          <Heading medium mt={2} mb={1}>
+          <Heading mt={2} mb={1}>
             {research.title}
           </Heading>
-          <Text preLine paragraph>
-            {research.description}
+          <Text sx={{ whiteSpace: 'pre-line', ...theme.typography.paragraph }}>
+            <Linkify properties={{ target: '_blank' }}>
+              {research.description}
+            </Linkify>
           </Text>
         </Box>
       </Flex>
       {research.moderation !== 'accepted' && (
-        <ModerationStatusText
-          moderatedContent={research}
+        <ModerationStatus
+          status={research.moderation}
           contentType="research"
-          bottom={'0'}
-          cropBottomRight
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+          }}
         />
       )}
     </Flex>

@@ -6,13 +6,16 @@ import {
   runInAction,
   toJS,
 } from 'mobx'
-import type { IResearchStats, IResearchDB } from 'src/models/research.models'
+import type {
+  IResearchStats,
+  IResearchDB,
+  IResearch,
+} from 'src/models/research.models'
 import { createContext, useContext } from 'react'
 import type { IConvertedFileMeta } from 'src/types'
 import { getUserCountry } from 'src/utils/getUserCountry'
 import { logger } from 'src/logger'
 import type { IComment, IUser } from 'src/models'
-import type { IResearch } from 'src/models/research.models'
 import { ModuleStore } from 'src/stores/common/module.store'
 import {
   filterModerableItems,
@@ -20,6 +23,7 @@ import {
   needsModeration,
   randomID,
 } from 'src/utils/helpers'
+import { MAX_COMMENT_LENGTH } from 'src/constants'
 
 const COLLECTION_NAME = 'research'
 
@@ -55,6 +59,20 @@ export class ResearchStore extends ModuleStore {
     return filterModerableItems(this.allResearchItems, this.activeUser)
   }
 
+  public getActiveResearchUpdateComments(pointer: number): IComment[] {
+    const comments = this.activeResearchItem?.updates[pointer]?.comments || []
+
+    return comments.map((comment: IComment) => {
+      return {
+        ...comment,
+        isUserVerified:
+          !!this.aggregationsStore.aggregations.users_verified?.[
+            comment.creatorName
+          ],
+      }
+    })
+  }
+
   public async setActiveResearchItem(slug?: string) {
     if (slug) {
       this.researchStats = undefined
@@ -67,7 +85,7 @@ export class ResearchStore extends ModuleStore {
       })
       // load Research stats which are stored in a separate subcollection
       await this.loadResearchStats(researchItem?._id)
-      return researchItem
+      return researchItem as IResearch.ItemDB
     } else {
       runInAction(() => {
         this.activeResearchItem = undefined
@@ -129,7 +147,7 @@ export class ResearchStore extends ModuleStore {
   ) {
     const user = this.activeUser
     const item = this.activeResearchItem
-    const comment = text.slice(0, 400).trim()
+    const comment = text.slice(0, MAX_COMMENT_LENGTH).trim()
 
     if (item && comment && user) {
       const dbRef = this.db
@@ -275,7 +293,9 @@ export class ResearchStore extends ModuleStore {
         } else updateWithMeta.images = []
 
         if (commentIndex !== -1) {
-          pastComments[commentIndex].text = newText.slice(0, 400).trim()
+          pastComments[commentIndex].text = newText
+            .slice(0, MAX_COMMENT_LENGTH)
+            .trim()
           pastComments[commentIndex]._edited = new Date().toISOString()
           updateWithMeta.comments = pastComments
 

@@ -1,13 +1,8 @@
 import * as React from 'react'
 import type { HowtoStore } from 'src/stores/Howto/howto.store'
 import { inject, observer } from 'mobx-react'
-import Heading from 'src/components/Heading'
-import { Icon } from 'oa-components'
-import { Modal } from 'src/components/Modal/Modal'
-import { Button } from 'oa-components'
-import { Flex } from 'theme-ui'
-import Text from 'src/components/Text'
-import { Box } from 'theme-ui'
+import { Heading, Flex, Box, Text } from 'theme-ui'
+import { Icon, Button, Modal } from 'oa-components'
 import type { RouteComponentProps } from 'react-router'
 
 interface IProps extends RouteComponentProps<any> {
@@ -31,10 +26,10 @@ export class HowToSubmitStatus extends React.Component<IProps> {
 
   render() {
     const uploadStatus = this.injected.howtoStore.uploadStatus
-    return uploadStatus.Start ? (
-      <Modal>
+    return (
+      <Modal isOpen={!!uploadStatus.Start}>
         <Flex sx={{ justifyContent: 'space-between' }}>
-          <Heading small sx={{ textAlign: 'center' }}>
+          <Heading variant="small" sx={{ textAlign: 'center' }}>
             Uploading How To
           </Heading>
           <Icon
@@ -70,6 +65,6 @@ export class HowToSubmitStatus extends React.Component<IProps> {
           View How-To
         </Button>
       </Modal>
-    ) : null
+    )
   }
 }

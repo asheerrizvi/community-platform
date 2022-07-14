@@ -1,22 +1,17 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import Select, { components } from 'react-select'
 import type { MultiValueRemoveProps } from 'react-select/lib/components/MultiValue'
-import Text from 'src/components/Text'
 import checkmarkIcon from 'src/assets/icons/icon-checkmark.svg'
 import { DropdownIndicator } from 'src/components/DropdownIndicator'
-import type { IMapGrouping, IPinGrouping } from 'src/models/maps.models'
-import { inject } from 'mobx-react'
 import type { MapsStore } from 'src/stores/Maps/maps.store'
-import { Box, Flex, Image } from 'theme-ui'
+import { Box, Flex, Image, Text } from 'theme-ui'
 import { SelectStyles } from 'src/components/Form/Select.field'
+import type { FilterGroup } from './transformAvailableFiltersToGroups'
+
 interface IProps {
-  items: Record<IPinGrouping, Array<IMapGrouping>>
+  items: FilterGroup[]
   onChange: (selectedItems: string[]) => void
   selectedItems: Array<string>
-}
-
-interface IState {
-  initialItems: Array<any>
 }
 interface IInjectedProps extends IProps {
   mapsStore: MapsStore
@@ -33,45 +28,17 @@ const MultiValueRemove = (props: MultiValueRemoveProps<FilterOption>) => {
   return <components.MultiValueRemove {...props}> </components.MultiValueRemove>
 }
 
-@inject('mapsStore')
-class GroupingFilterDesktop extends Component<IProps, IState> {
+class GroupingFilterDesktop extends Component<IProps> {
   constructor(props: IProps) {
     super(props)
-    this.state = {
-      initialItems: this.transform(props.items),
-    }
   }
   get injected() {
     return this.props as IInjectedProps
   }
 
-  transform = (items: Record<IPinGrouping, Array<IMapGrouping>>) => {
-    return Object.keys(items).map((item) => {
-      return {
-        label: item === 'place' ? 'All Workspaces' : 'Others',
-        options: this.asOptions(items[item]),
-      }
-    })
-  }
-
-  asOptions(items: Array<IMapGrouping>) {
-    return items
-      .filter((item) => {
-        return !item.hidden
-      })
-      .map((item) => ({
-        label: item.displayName,
-        value: item.subType ? item.subType : item.type,
-        icon: item.icon,
-        number: this.injected.mapsStore.getPinsNumberByFilterType(
-          item.subType ? item.subType.split(' ') : item.type.split(' '),
-        ),
-      }))
-  }
-
   render() {
     const { items, selectedItems } = this.props
-    const groupedOptions = this.transform(items)
+    const groupedOptions = items
     const optionsRender = (option, formatOptionLabelMeta) => {
       if (formatOptionLabelMeta.context === 'value') {
         return option.label
@@ -83,13 +50,13 @@ class GroupingFilterDesktop extends Component<IProps, IState> {
           key={option.label}
         >
           <Flex sx={{ alignItems: 'center' }}>
-            <Image width="30px" src={option.icon} />
-            <Text medium ml="10px">
+            {option.imageElement}
+            <Text sx={{ fontSize: 2 }} ml="10px">
               {option.label} ({option.number})
             </Text>
           </Flex>
           {selectedItems.includes(option.value) && (
-            <Image src={checkmarkIcon} width="20px" />
+            <Image loading="lazy" src={checkmarkIcon} width="20px" />
           )}
         </Flex>
       )

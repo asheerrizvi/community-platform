@@ -7,8 +7,8 @@ import { TAGS_MOCK } from 'src/mocks/tags.mock'
 import { Box, Flex } from 'theme-ui'
 import { Button } from 'oa-components'
 import Selector from 'src/components/Selector'
-import { Link } from 'react-router-dom'
 import { logger } from 'src/logger'
+import { Link } from 'react-router-dom'
 
 interface IProps {
   onChange: () => void

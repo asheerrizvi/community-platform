@@ -1,8 +1,7 @@
 import { Component } from 'react'
 import { HiddenInput } from '../elements'
-import { Label, Image, Flex, Box } from 'theme-ui'
-import Text from 'src/components/Text'
-import { HiddenInputField } from 'src/components/Form/Fields'
+import { Label, Image, Flex, Box, Text, Input } from 'theme-ui'
+import type { FieldRenderProps } from 'react-final-form'
 
 interface IProps {
   value: string
@@ -20,6 +19,24 @@ interface IProps {
 interface IState {
   showDeleteModal: boolean
 }
+
+type FieldProps = FieldRenderProps<any, any> & {
+  children?: React.ReactNode
+  disabled?: boolean
+  'data-cy'?: string
+  customOnBlur?: (event) => void
+}
+
+const HiddenInputField = ({ input, meta, ...rest }: FieldProps) => (
+  <>
+    <Input
+      type="hidden"
+      variant={meta.error && meta.touched ? 'error' : 'input'}
+      {...input}
+      {...rest}
+    />
+  </>
+)
 
 // validation - return undefined if no error (i.e. valid)
 const isRequired = (value: any) => (value ? undefined : 'Required')
@@ -94,6 +111,7 @@ class CustomRadioField extends Component<IProps, IState> {
         />
         {imageSrc && (
           <Image
+            loading="lazy"
             px={3}
             src={imageSrc}
             sx={{ width: ['100px', '100px', '100%'] }}
@@ -111,9 +129,11 @@ class CustomRadioField extends Component<IProps, IState> {
             {textLabel && (
               <Text
                 px={1}
-                my={1}
-                small
                 sx={{
+                  display: 'block',
+                  fontSize: 1,
+                  marginTop: 1,
+                  marginBottom: 1,
                   fontWeight: ['bold', 'bold', 'inherit'],
                   textAlign: ['left', 'left', 'center'],
                 }}
@@ -122,7 +142,15 @@ class CustomRadioField extends Component<IProps, IState> {
               </Text>
             )}
             {subText && (
-              <Text my={1} txtcenter small>
+              <Text
+                sx={{
+                  textAlign: 'center',
+                  fontSize: 1,
+                  display: 'block',
+                  marginTop: 1,
+                  marginBottom: 1,
+                }}
+              >
                 {subText}
               </Text>
             )}

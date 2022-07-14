@@ -22,7 +22,7 @@ describe('[How To]', () => {
       cy.get('[data-cy=card]').its('length').should('be.eq', totalHowTo)
 
       cy.step('How-to cards has basic info')
-      cy.get(`[data-cy=card] > a[href="${howtoUrl}"]`).within(() => {
+      cy.get(`[data-cy=card] a[href="${howtoUrl}"]`).within(() => {
         cy.contains('Make glass-like beams').should('be.exist')
         cy.contains('By howto_creator').should('be.exist')
         cy.get('img').should('have.attr', 'src').and('match', coverFileRegex)
@@ -30,7 +30,7 @@ describe('[How To]', () => {
       })
 
       cy.step(`Open how-to details when click on a how-to ${howtoUrl}`)
-      cy.get(`[data-cy=card] > a[href="${howtoUrl}"]`, SKIP_TIMEOUT).click()
+      cy.get(`[data-cy=card] a[href="${howtoUrl}"]`, SKIP_TIMEOUT).click()
       cy.url().should('include', howtoUrl)
     })
 
@@ -181,20 +181,36 @@ describe('[How To]', () => {
         cy.get('[data-cy=edit]').should('not.exist')
       })
 
-      it('[Comment functionality available]', () => {
-        const commentText = 'A short string intended to test commenting'
-        cy.login('howto_reader@test.com', 'test1234')
-        cy.visit(specificHowtoUrl)
+      describe('[Commenting]', () => {
+        it('[Logged in user cannot edit a comment by another user]', () => {
+          cy.login('howto_reader@test.com', 'test1234')
+          cy.visit(specificHowtoUrl)
+          cy.get('[data-cy="howto-comments"]').should('exist')
+          cy.get('[data-cy="CommentItem: edit button"]').should('not.exist')
+        })
 
-        cy.get(`[data-cy="comments-login-prompt"]`).should('not.exist')
+        it('[Logged in user can add a comment]', () => {
+          const commentText = 'A short string intended to test commenting'
+          cy.login('howto_reader@test.com', 'test1234')
+          cy.visit(specificHowtoUrl)
 
-        cy.get(`[data-cy="comments-form"]`).should('be.exist')
+          cy.get(`[data-cy="comments-login-prompt"]`).should('not.exist')
 
-        cy.get('[data-cy="comments-form"]').type(commentText)
+          cy.get(`[data-cy="comments-form"]`).should('be.exist')
 
-        cy.get('[data-cy="comment-submit"]').click()
+          cy.get('[data-cy="comments-form"]').type(commentText)
 
-        cy.get('[data-cy="comment-text"]').should('contain.text', commentText)
+          cy.get('[data-cy="comment-submit"]').click()
+
+          cy.get('[data-cy="comment-text"]').should('contain.text', commentText)
+        })
+
+        it('[Logged in user can edit the comment they have added]', () => {
+          cy.login('howto_reader@test.com', 'test1234')
+          cy.visit(specificHowtoUrl)
+
+          cy.get('[data-cy="CommentItem: edit button"]').should('exist')
+        })
       })
     })
 

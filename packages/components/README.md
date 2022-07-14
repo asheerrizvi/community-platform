@@ -1,10 +1,10 @@
-# One Army UI Kit
+# One Army Components
 
 These components provide a collection of elements that can be reused across the platform.
 
 Components can be combined to help anyone building on the platform to efficiently design consistent experiences for site visitors.
 
-The aim of packaging these components seperately is to:
+The aim of packaging these components separately is to:
 
 1. Reduce the overhead for contributors looking to work **only** on the component layer without needing to spin up the entire application locally.
 2. Encourage decoupling of presentation layer from business logic, typically stored within the `*.stores.tsx` files.
@@ -23,4 +23,16 @@ After [cloning the repo](https://github.com/ONEARMY/community-platform), you can
 cd ./packages/components
 yarn install
 yarn start
+```
+
+## Creating a new Component
+
+You can quickly create a new component using the command `yarn new-component MyNewComponentName`, which
+will generate the following items:
+
+```
+src/
+  MyNewComponentName/
+    MyNewComponentName.tsx # Component
+    MyNewComponentName.stories.tsx # Storybook documentation
 ```

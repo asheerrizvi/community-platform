@@ -1,17 +1,20 @@
-import { Box, Flex, Text } from 'theme-ui'
+import { Box, Flex, Text, Image } from 'theme-ui'
 import { FlagIconHowTos } from 'oa-components'
 import type { IComment } from 'src/models'
-import { Link } from 'src/components/Links'
 import theme from 'src/themes/styled.theme'
-import { VerifiedUserBadge } from '../VerifiedUserBadge/VerifiedUserBadge'
+import VerifiedBadgeIcon from 'src/assets/icons/icon-verified-badge.svg'
+import { Link } from 'react-router-dom'
 
-interface IProps extends Omit<IComment, 'text' | '_id' | '_creatorId'> {}
+interface IProps extends Omit<IComment, 'text' | '_id' | '_creatorId'> {
+  isUserVerified?: boolean
+}
 
 export const CommentHeader = ({
   creatorName,
   creatorCountry,
   _created,
   _edited,
+  isUserVerified,
 }: IProps) => {
   return (
     <Flex sx={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
@@ -19,7 +22,7 @@ export const CommentHeader = ({
         {creatorCountry && <FlagIconHowTos code={creatorCountry} />}
         <span style={{ marginLeft: creatorCountry ? '5px' : 0 }}>
           <Link
-            sx={{
+            style={{
               textDecoration: 'underline',
               color: 'inherit',
             }}
@@ -27,12 +30,15 @@ export const CommentHeader = ({
           >
             {creatorName}
           </Link>
-          <VerifiedUserBadge
-            userId={creatorName}
-            ml={1}
-            height="12px"
-            width="12px"
-          />
+          {isUserVerified ? (
+            <Image
+              loading="lazy"
+              src={VerifiedBadgeIcon}
+              ml={1}
+              height="12px"
+              width="12px"
+            />
+          ) : null}
         </span>
       </Box>
       <Flex sx={{ alignItems: 'center' }}>

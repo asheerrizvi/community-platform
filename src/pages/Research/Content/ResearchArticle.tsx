@@ -2,15 +2,17 @@ import { observer } from 'mobx-react'
 import * as React from 'react'
 import type { RouteComponentProps } from 'react-router'
 import { Box, Flex } from 'theme-ui'
-import { Button } from 'oa-components'
-import { Link } from 'src/components/Links'
-import { Loader } from 'src/components/Loader'
+import { Button, Loader } from 'oa-components'
 import { NotFoundPage } from 'src/pages/NotFound/NotFound'
 import { useResearchStore } from 'src/stores/Research/research.store'
 import { isAllowToEditContent } from 'src/utils/helpers'
 import ResearchDescription from './ResearchDescription'
 import ResearchUpdate from './ResearchUpdate'
 import { useCommonStores } from 'src/index'
+import { Link } from 'react-router-dom'
+import type { IComment, UserComment } from 'src/models'
+import { seoTagsUpdate } from 'src/utils/seo'
+import type { IUploadedFileMeta } from 'src/stores/storage'
 
 type IProps = RouteComponentProps<{ slug: string }>
 
@@ -55,17 +57,31 @@ const ResearchArticle = observer((props: IProps) => {
   React.useEffect(() => {
     ;(async () => {
       const { slug } = props.match.params
-      await researchStore.setActiveResearchItem(slug)
+      const researchItem = await researchStore.setActiveResearchItem(slug)
       setIsLoading(false)
       const hash = props.location.hash
       if (hash) {
         scrollIntoRelevantSection(hash)
       }
+      // Update SEO tags
+      if (researchItem) {
+        // Use whatever image used in most recent update for SEO image
+        const latestImage = researchItem?.updates
+          ?.map((u) => (u.images?.[0] as IUploadedFileMeta)?.downloadUrl)
+          .filter((url: string) => !!url)
+          .pop()
+        seoTagsUpdate({
+          title: researchItem.title,
+          description: researchItem.description,
+          imageUrl: latestImage,
+        })
+      }
     })()
 
-    // Reset the store's active item on component cleanup
+    // Reset the store's active item and seo tags on component cleanup
     return () => {
       researchStore.setActiveResearchItem()
+      seoTagsUpdate({})
     }
   }, [props, researchStore])
 
@@ -106,14 +122,18 @@ const ResearchArticle = observer((props: IProps) => {
                   updateIndex={index}
                   isEditable={isEditable}
                   slug={item.slug}
+                  comments={transformToUserComment(
+                    researchStore.getActiveResearchUpdateComments(index),
+                    loggedInUser?.userName,
+                  )}
                 />
               )
             })}
         </Box>
         {isEditable && (
           <Flex my={4}>
-            <Link to={`/research/${item.slug}/new-update`} mb={[3, 3, 0]}>
-              <Button large ml={2}>
+            <Link to={`/research/${item.slug}/new-update`}>
+              <Button large ml={2} mb={[3, 3, 0]}>
                 Add update
               </Button>
             </Link>
@@ -125,4 +145,15 @@ const ResearchArticle = observer((props: IProps) => {
     return isLoading ? <Loader /> : <NotFoundPage />
   }
 })
+
+function transformToUserComment(
+  comments: IComment[],
+  loggedInUsername,
+): UserComment[] {
+  return comments.map((c) => ({
+    ...c,
+    isEditable: c.creatorName === loggedInUsername,
+  }))
+}
+
 export default ResearchArticle

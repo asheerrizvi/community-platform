@@ -195,6 +195,17 @@ examples:
 #  Jobs - Independently specified lists of tasks and environments for execution
 ######################################################################################################
 jobs:
+  spellcheck:
+    docker: *docker
+    resource_class: small
+    steps:
+      - checkout
+      - attach_workspace:
+          at: '.'
+      - run:
+          name: Check spelling on documentation
+          command: |
+            npx cspell "**/*.md" --config ./.cspell.json
   lint-commits:
     docker: *docker
     resource_class: small
@@ -215,6 +226,8 @@ jobs:
       - setup_repo
       - run:
           command: yarn lint
+      - run:
+          command: yarn workspace oa-components lint
   # Prepare node module caches so that future tasks run more quickly
   # NOTE - not currently used as we only have one workflow
   setup:
@@ -311,7 +324,7 @@ jobs:
           steps:
             - slack/notify:
                 event: fail
-                mentions: '@Chris Clarke'
+                mentions: '@channel'
                 template: basic_fail_1
             - slack/notify:
                 event: pass
@@ -371,6 +384,12 @@ workflows:
   main_workflow:
     # by default jobs will run concurrently, so specify requires if want to run sequentially
     jobs:
+      - spellcheck:
+          name: Check documentation spelling
+          filters:
+            branches:
+              ignore:
+                - production
       - lint-commits:
           name: Lint commits
           filters:
@@ -380,7 +399,8 @@ workflows:
       - lint:
           name: Lint code
           requires:
-            - "Lint commits"
+            - 'Check documentation spelling'
+            - 'Lint commits'
           filters:
             branches:
               ignore:
@@ -433,37 +453,57 @@ workflows:
               ignore:
                 - production
       #---------------------- Development Instances Build and Deploy ----------------------
-      - deploy:
-          name: 'Deploy: dev.onearmy.world'
+      - release:
+          name: Release new version to GitHub
           requires:
             - test_e2e
           <<: *filter_only_master
+          context:
+            - release-context
+      - deploy:
+          name: 'Deploy: dev.onearmy.world'
+          requires:
+            - 'Release new version to GitHub'
+          <<: *filter_only_master
           DEPLOY_ALIAS: 'default'
-          NOTIFY_SLACK: false
+          NOTIFY_SLACK: true
           context:
             - circle-ci-slack-context
             - community-platform-dev
       - deploy:
           name: 'Deploy: dev.community.projectkamp.com'
           requires:
-            - test_e2e
+            - 'Release new version to GitHub'
           <<: *filter_only_master
           DEPLOY_ALIAS: project-kamp-development
-          NOTIFY_SLACK: false
+          NOTIFY_SLACK: true
           context:
             - circle-ci-slack-context
             - project-kamp-dev
-      - release:
+      - deploy:
+          name: 'Deploy: fixing-fashion-dev.web.app'
           requires:
-            - 'Deploy: community.preciousplastic.com'
-            - 'Deploy: community.projectkamp.com'
-          name: Release new version to GitHub
+            - 'Release new version to GitHub'
+          <<: *filter_only_master
+          DEPLOY_ALIAS: fixing-fashion-dev
+          NOTIFY_SLACK: true
           context:
-            - release-context
+            - circle-ci-slack-context
+            - fixing-fashion-dev
       - build:
           name: Build Production Release
           context: build-context
           <<: *filter_only_production
+      - deploy:
+          name: 'Deploy: fixing-fashion-prod.web.app'
+          requires:
+            - 'Build Production Release'
+          <<: *filter_only_production
+          DEPLOY_ALIAS: fixing-fashion-prod
+          NOTIFY_SLACK: true
+          context:
+            - circle-ci-slack-context
+            - fixing-fashion-prod
       - deploy:
           name: 'Deploy: community.preciousplastic.com'
           requires:

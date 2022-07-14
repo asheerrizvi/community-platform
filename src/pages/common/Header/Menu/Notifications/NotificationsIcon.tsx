@@ -1,4 +1,4 @@
-import Flex from 'src/components/Flex'
+import { Flex } from 'theme-ui'
 import { ReactComponent as IconNotifications } from 'src/assets/icons/icon-notification.svg'
 import styled from '@emotion/styled'
 
@@ -8,13 +8,11 @@ const IconWrapper = styled(Flex)`
   color: #000;
   width: 100%;
   font-size: 16px;
-  padding: 10px; 
+  padding: 10px;
   cursor: pointer;
-  
-  }
 `
 
-function NotificationsIcon({
+export function NotificationsIcon({
   onCLick,
   isMobileMenuActive,
   areThereNotifications,
@@ -43,5 +41,3 @@ function NotificationsIcon({
     </>
   )
 }
-
-export default NotificationsIcon

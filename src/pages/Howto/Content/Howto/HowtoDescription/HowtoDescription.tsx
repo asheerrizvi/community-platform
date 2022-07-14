@@ -2,16 +2,12 @@ import { PureComponent } from 'react'
 import TagDisplay from 'src/components/Tags/TagDisplay/TagDisplay'
 import { format } from 'date-fns'
 import type { IHowtoDB } from 'src/models/howto.models'
-import Heading from 'src/components/Heading'
-import Text from 'src/components/Text'
-import ModerationStatusText from 'src/components/ModerationStatusText'
-import { Link } from 'src/components/Links'
-import { Box, Flex, Image } from 'theme-ui'
+import { Heading, Text, Box, Flex, Image, AspectImage } from 'theme-ui'
 import { FileInfo } from 'src/components/FileInfo/FileInfo'
 import StepsIcon from 'src/assets/icons/icon-steps.svg'
 import TimeNeeded from 'src/assets/icons/icon-time-needed.svg'
 import DifficultyLevel from 'src/assets/icons/icon-difficulty-level.svg'
-import { Button } from 'oa-components'
+import { Button, FlagIconHowTos, ModerationStatus } from 'oa-components'
 import type { IUser } from 'src/models/user.models'
 import {
   isAllowToEditContent,
@@ -20,9 +16,19 @@ import {
 } from 'src/utils/helpers'
 import theme from 'src/themes/styled.theme'
 import ArrowIcon from 'src/assets/icons/icon-arrow-select.svg'
-import { FlagIconHowTos } from 'oa-components'
 import { VerifiedUserBadge } from 'src/components/VerifiedUserBadge/VerifiedUserBadge'
 import { UsefulStatsButton } from 'src/components/UsefulStatsButton/UsefulStatsButton'
+import { DownloadExternal } from 'src/pages/Howto/DownloadExternal/DownloadExternal'
+import Linkify from 'react-linkify'
+import { Link } from 'react-router-dom'
+import type { HowtoStore } from 'src/stores/Howto/howto.store'
+import { inject, observer } from 'mobx-react'
+import {
+  retrieveHowtoDownloadCooldown,
+  isHowtoDownloadCooldownExpired,
+  addHowtoDownloadCooldown,
+  updateHowtoDownloadCooldown,
+} from './downloadCooldown'
 
 interface IProps {
   howto: IHowtoDB
@@ -35,10 +41,34 @@ interface IProps {
   onUsefulClick: () => void
 }
 
-export default class HowtoDescription extends PureComponent<IProps> {
+interface IInjected extends IProps {
+  howtoStore: HowtoStore
+}
+
+interface IState {
+  fileDownloadCount: number | undefined
+}
+
+@inject('howtoStore')
+@observer
+export default class HowtoDescription extends PureComponent<IProps, IState> {
   // eslint-disable-next-line
   constructor(props: IProps) {
     super(props)
+    this.state = {
+      fileDownloadCount: this.props.howto.total_downloads || 0,
+    }
+    this.handleClick = this.handleClick.bind(this)
+  }
+
+  get injected() {
+    return this.props as IInjected
+  }
+
+  private setFileDownloadCount = (val: number) => {
+    this.setState({
+      fileDownloadCount: val,
+    })
   }
 
   private dateCreatedByText(howto: IHowtoDB): string {
@@ -52,6 +82,31 @@ export default class HowtoDescription extends PureComponent<IProps> {
       return 'Last edit on ' + format(new Date(howto._modified), 'DD-MM-YYYY')
     } else {
       return ''
+    }
+  }
+
+  private incrementDownloadCount = async () => {
+    const updatedDownloadCount =
+      await this.injected.howtoStore.incrementDownloadCount(
+        this.props.howto._id,
+      )
+    this.setFileDownloadCount(updatedDownloadCount!)
+  }
+
+  private handleClick = async () => {
+    const howtoDownloadCooldown = retrieveHowtoDownloadCooldown(
+      this.props.howto._id,
+    )
+
+    if (
+      howtoDownloadCooldown &&
+      isHowtoDownloadCooldownExpired(howtoDownloadCooldown)
+    ) {
+      updateHowtoDownloadCooldown(this.props.howto._id)
+      this.incrementDownloadCount()
+    } else if (!howtoDownloadCooldown) {
+      addHowtoDownloadCooldown(this.props.howto._id)
+      this.incrementDownloadCount()
     }
   }
 
@@ -93,6 +148,7 @@ export default class HowtoDescription extends PureComponent<IProps> {
               >
                 <Flex>
                   <Image
+                    loading="lazy"
                     sx={{
                       width: '10px',
                       marginRight: '4px',
@@ -146,10 +202,14 @@ export default class HowtoDescription extends PureComponent<IProps> {
               {howto.creatorCountry && (
                 <FlagIconHowTos code={howto.creatorCountry} />
               )}
-              <Text inline auxiliary my={2} ml={1}>
+              <Text
+                my={2}
+                ml={1}
+                sx={{ ...theme.typography.auxiliary, display: 'inline-block' }}
+              >
                 By{' '}
                 <Link
-                  sx={{
+                  style={{
                     textDecoration: 'underline',
                     color: 'inherit',
                   }}
@@ -166,33 +226,54 @@ export default class HowtoDescription extends PureComponent<IProps> {
               </Text>
             </Flex>
             <Text
-              auxiliary
-              sx={{ color: `${theme.colors.lightgrey} !important` }}
+              sx={{
+                ...theme.typography.auxiliary,
+                color: `${theme.colors.lightgrey} !important`,
+              }}
               mt={1}
               mb={2}
             >
               {this.dateLastEditText(howto)}
             </Text>
-            <Heading medium mt={2} mb={1}>
+            <Heading mt={2} mb={1}>
               {/* HACK 2021-07-16 - new howtos auto capitalize title but not older */}
               {capitalizeFirstLetter(howto.title)}
             </Heading>
-            <Text preLine paragraph>
-              {howto.description}
+            <Text
+              sx={{ ...theme.typography.paragraph, whiteSpace: 'pre-line' }}
+            >
+              <Linkify properties={{ target: '_blank' }}>
+                {howto.description}
+              </Linkify>
             </Text>
           </Box>
 
           <Flex mt="4">
             <Flex mr="4" sx={{ flexDirection: iconFlexDirection }}>
-              <Image src={StepsIcon} height="16" width="23" mr="2" mb="2" />
+              <Image
+                loading="lazy"
+                src={StepsIcon}
+                height="16"
+                width="23"
+                mr="2"
+                mb="2"
+              />
               {howto.steps.length} steps
             </Flex>
             <Flex mr="4" sx={{ flexDirection: iconFlexDirection }}>
-              <Image src={TimeNeeded} height="16" width="16" mr="2" mb="2" />
+              <Image
+                loading="lazy"
+                src={TimeNeeded}
+                height="16"
+                width="16"
+                mr="2"
+                mb="2"
+              />
               {howto.time}
             </Flex>
             <Flex mr="4" sx={{ flexDirection: iconFlexDirection }}>
               <Image
+                loading="lazy"
                 src={DifficultyLevel}
                 height="15"
                 width="16"
@@ -208,47 +289,69 @@ export default class HowtoDescription extends PureComponent<IProps> {
                 return <TagDisplay key={tag} tagKey={tag} />
               })}
           </Flex>
-          {howto.files && howto.files.length > 0 && (
+          {((howto.files && howto.files.length > 0) || howto.fileLink) && (
             <Flex
               className="file-container"
               mt={3}
               sx={{ flexDirection: 'column' }}
             >
+              {howto.fileLink && (
+                <DownloadExternal
+                  handleClick={this.handleClick}
+                  link={howto.fileLink}
+                />
+              )}
               {howto.files.map((file, index) => (
                 <FileInfo
                   allowDownload
                   file={file}
                   key={file ? file.name : `file-${index}`}
+                  handleClick={this.handleClick}
                 />
               ))}
+              {typeof this.state.fileDownloadCount === 'number' && (
+                <Text
+                  data-cy="file-download-counter"
+                  sx={{
+                    fontSize: '12px',
+                    color: '#61646B',
+                    paddingLeft: '8px',
+                  }}
+                >
+                  {this.state.fileDownloadCount}
+                  {this.state.fileDownloadCount !== 1
+                    ? ' downloads'
+                    : ' download'}
+                </Text>
+              )}
             </Flex>
           )}
         </Flex>
-        <Flex
+        <Box
           sx={{
             width: ['100%', '100%', `${(1 / 2) * 100}%`],
             position: 'relative',
-            justifyContent: 'end',
           }}
         >
-          <Image
+          <AspectImage
+            loading="lazy"
+            ratio={12 / 9}
             sx={{
               objectFit: 'cover',
-              width: 'auto',
-              height: '100%',
+              width: '100%',
             }}
             src={howto.cover_image.downloadUrl}
             crossOrigin=""
             alt="how-to cover"
           />
           {howto.moderation !== 'accepted' && (
-            <ModerationStatusText
-              moderatedContent={howto}
+            <ModerationStatus
+              status={howto.moderation}
               contentType="howto"
-              top={'0px'}
+              sx={{ top: 0, position: 'absolute', right: 0 }}
             />
           )}
-        </Flex>
+        </Box>
       </Flex>
     )
   }

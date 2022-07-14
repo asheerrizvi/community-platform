@@ -1,0 +1,119 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 60,
+  "contributorsPerLine": 7,
+  "contributorsSortAlphabetically": false,
+  "badgeTemplate": "[![All Contributors](https://img.shields.io/badge/all_contributors-<%= contributors.length %>-orange.svg?style=flat-square)](#contributors)",
+  "skipCi": true,
+  "types": {
+    "maintainer": {
+      "symbol": "💪",
+      "description": "Maintainer",
+      "link": "[<%= symbol %>](\"<%= description %>\"),"
+    }
+  },
+  "contributors": [
+    {
+      "login": "davehakkens",
+      "name": "Dave Hakkens",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13672737?v=4",
+      "profile": "http://davehakkens.nl",
+      "contributions": [
+        "design",
+        "ideas",
+        "projectManagement",
+        "maintainer"
+      ]
+    },
+    {
+      "login": "chrismclarke",
+      "name": "Chris Clarke",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10515065?v=4",
+      "profile": "https://c2dev.co.uk/",
+      "contributions": [
+        "code",
+        "maintainer"
+      ]
+    },
+    {
+      "login": "thisislawatts",
+      "name": "Luke Watts",
+      "avatar_url": "https://avatars.githubusercontent.com/u/472589?v=4",
+      "profile": "https://thisis.la/",
+      "contributions": [
+        "code",
+        "maintainer"
+      ]
+    },
+    {
+      "login": "amuroBosetti",
+      "name": "Mauro Bosetti",
+      "avatar_url": "https://avatars.githubusercontent.com/u/46928545?v=4",
+      "profile": "https://github.com/amuroBosetti",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "patrycjapraczyk",
+      "name": "patrycjapraczyk",
+      "avatar_url": "https://avatars.githubusercontent.com/u/35103888?v=4",
+      "profile": "https://github.com/patrycjapraczyk",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "tedspare",
+      "name": "Ted Spare",
+      "avatar_url": "https://avatars.githubusercontent.com/u/36117635?v=4",
+      "profile": "https://tedspare.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "eliasvelardezft",
+      "name": "Elias Velardez",
+      "avatar_url": "https://avatars.githubusercontent.com/u/40184787?v=4",
+      "profile": "https://www.linkedin.com/in/eliasvelardez",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "AlfonsoGhislieri",
+      "name": "Alfonso",
+      "avatar_url": "https://avatars.githubusercontent.com/u/652368?v=4",
+      "profile": "https://medium.com/@Alfonso_Ghislieri",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Xyli0",
+      "name": "Xyli0",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10441748?v=4",
+      "profile": "https://github.com/Xyli0",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "laianbraum",
+      "name": "Laian Braum",
+      "avatar_url": "https://avatars.githubusercontent.com/u/61033391?v=4",
+      "profile": "http://www.linkedin.com/in/laianbraum",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "projectName": "community-platform",
+  "projectOwner": "ONEARMY",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "commitConvention": "none"
+}

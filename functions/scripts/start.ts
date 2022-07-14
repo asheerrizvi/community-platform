@@ -4,15 +4,11 @@ import webpack from 'webpack'
 import * as os from 'os'
 import * as fs from 'fs-extra'
 import webpackConfig from '../webpack.config'
-import {
-  EMULATOR_EXPORT_FOLDER,
-  EMULATOR_IMPORT_FOLDER,
-  EMULATOR_IMPORT_PATH,
-} from './paths'
-import { emulatorSeed } from './emulator/seed'
+import { EMULATOR_EXPORT_FOLDER, EMULATOR_IMPORT_FOLDER } from './paths'
 
 /**
  * Start the functions emulator and functions source code in parallel
+ * TODO - merge/replace with docker methods
  *
  * NOTE - whilst similar functionality can be achieved with packages like 'concurrently',
  * SIGTERM signals don't seem to always be handled correctly and the emulator doesn't complete
@@ -81,11 +77,9 @@ function startEmulator(functionsCompiler: webpack.Compiler.Watching) {
   // the name of the project that generated service account credentials has access to
   const REAL_PROJECT_ID = 'precious-plastics-v4-dev'
   // any project id can be specified (doesn't have to be real) - functions will be available on the endpoint
-  const EMULATOR_PROJECT_ID = 'emulator-demo'
+  const EMULATOR_PROJECT_ID = 'community-platform-emulated'
   let cmd = `${FIREBASE_BIN} use ${REAL_PROJECT_ID} && ${FIREBASE_BIN} --project=${EMULATOR_PROJECT_ID} emulators:start`
 
-  // ensure seed data imported
-  checkSeedData()
   cmd = `${cmd} --import=${EMULATOR_IMPORT_FOLDER}`
 
   // change this value if also wanting to export data
@@ -112,14 +106,6 @@ function startEmulator(functionsCompiler: webpack.Compiler.Watching) {
       )
     }
   })
-}
-
-function checkSeedData() {
-  // TODO - handle case where seed data exists but newer data available (e.g. specify file)
-  if (!fs.existsSync(EMULATOR_IMPORT_PATH)) {
-    console.log('[Emulator] - Seeding Data')
-    emulatorSeed()
-  }
 }
 
 /**

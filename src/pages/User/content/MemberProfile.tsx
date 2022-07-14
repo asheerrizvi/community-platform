@@ -2,37 +2,18 @@ import 'src/assets/css/slick.min.css'
 import type { IUserPP } from 'src/models/user_pp.models'
 import type { IUploadedFileMeta } from 'src/stores/storage'
 
-import { Box, Image } from 'theme-ui'
+import { Box, Image, Text, Flex, Heading, Card } from 'theme-ui'
 import DefaultMemberImage from 'src/assets/images/default_member.svg'
-import Flex from 'src/components/Flex'
-import Heading from 'src/components/Heading'
-import { FlagIcon } from 'oa-components'
-import { Text } from 'src/components/Text'
+import { FlagIcon, MemberBadge } from 'oa-components'
 import theme from 'src/themes/styled.theme'
 import styled from '@emotion/styled'
 import { UserStats } from './UserStats'
 import UserContactAndLinks from './UserContactAndLinks'
-import Badge from 'src/components/Badge/Badge'
+import { UserAdmin } from './UserAdmin'
 
 interface IProps {
   user: IUserPP
-  adminButton?: JSX.Element | React.Component
 }
-
-const ProfileWrapper = styled(Box)`
-  display: block;
-  border: 2px solid black;
-  border-radius: ${theme.space[2]}px;
-  align-self: center;
-  width: 100%;
-  max-width: 42em;
-  position: relative;
-`
-
-const ProfileContentWrapper = styled(Flex)`
-  background-color: ${theme.colors.white};
-  border-radius: 10px;
-`
 
 const MemberPicture = styled('figure')`
   display: block;
@@ -41,6 +22,7 @@ const MemberPicture = styled('figure')`
   border-radius: 50%;
   max-width: none;
   overflow: hidden;
+  margin: 0 auto;
 
   img {
     outline: 100px solid red;
@@ -50,7 +32,7 @@ const MemberPicture = styled('figure')`
   }
 `
 
-export const MemberProfile = ({ user, adminButton }: IProps) => {
+export const MemberProfile = ({ user }: IProps) => {
   const userLinks = user?.links.filter(
     (linkItem) => !['discord', 'forum'].includes(linkItem.label),
   )
@@ -59,8 +41,19 @@ export const MemberProfile = ({ user, adminButton }: IProps) => {
     user.location?.countryCode || user.country?.toLowerCase() || null
 
   return (
-    <ProfileWrapper mt={8} mb={6}>
-      <Badge
+    <Card
+      mt={8}
+      mb={6}
+      data-cy="MemberProfile"
+      sx={{
+        position: 'relative',
+        overflow: 'visible',
+        maxWidth: '42em',
+        width: '100%',
+        margin: '0 auto',
+      }}
+    >
+      <MemberBadge
         profileType="member"
         size={50}
         style={{
@@ -71,10 +64,15 @@ export const MemberProfile = ({ user, adminButton }: IProps) => {
           marginTop: 50 * -0.5,
         }}
       />
-      <ProfileContentWrapper px={4} py={4}>
+      <Flex
+        px={4}
+        py={4}
+        sx={{ borderRadius: 1, flexDirection: ['column', 'row'] }}
+      >
         <Box mr={3} style={{ flexGrow: 1, minWidth: 'initial' }}>
           <MemberPicture>
             <Image
+              loading="lazy"
               src={
                 user.coverImages[0]
                   ? (user.coverImages[0] as IUploadedFileMeta).downloadUrl
@@ -85,8 +83,8 @@ export const MemberProfile = ({ user, adminButton }: IProps) => {
           <UserStats user={user} />
         </Box>
         <Flex
-          mt={3}
-          ml={3}
+          mt={[0, 3]}
+          ml={[0, 3]}
           sx={{ flexGrow: 2, width: '100%', flexDirection: 'column' }}
         >
           <Flex
@@ -103,42 +101,46 @@ export const MemberProfile = ({ user, adminButton }: IProps) => {
               />
             )}
             <Text
-              large
               my={2}
               sx={{
                 color: `${theme.colors.lightgrey} !important`,
                 wordBreak: 'break-word',
+                fontSize: 3,
               }}
+              data-cy="userName"
             >
               {user.userName}
             </Text>
           </Flex>
           <Box sx={{ flexDirection: 'column' }} mb={3}>
             <Heading
-              medium
-              bold
               color={'black'}
               style={{ wordWrap: 'break-word' }}
+              data-cy="userDisplayName"
             >
               {user.displayName}
             </Heading>
           </Box>
           {user.about && (
             <Text
-              preLine
-              paragraph
               mt="0"
               mb="20px"
               color={theme.colors.grey}
-              sx={{ width: ['80%', '100%'] }}
+              sx={{
+                ...theme.typography.paragraph,
+                whiteSpace: 'pre-line',
+                width: ['80%', '100%'],
+              }}
             >
               {user.about}
             </Text>
           )}
           <UserContactAndLinks links={userLinks} />
-          <Box mt={3}>{adminButton}</Box>
+          <Box mt={3}>
+            <UserAdmin user={user} />
+          </Box>
         </Flex>
-      </ProfileContentWrapper>
-    </ProfileWrapper>
+      </Flex>
+    </Card>
   )
 }

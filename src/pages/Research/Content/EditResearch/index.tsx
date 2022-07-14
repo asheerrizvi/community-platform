@@ -3,8 +3,8 @@ import { observer } from 'mobx-react'
 import * as React from 'react'
 import type { RouteComponentProps } from 'react-router'
 import { Redirect } from 'react-router'
-import { Loader } from 'src/components/Loader'
-import Text from 'src/components/Text'
+import { Loader } from 'oa-components'
+import { Text } from 'theme-ui'
 import type { IResearch } from 'src/models/research.models'
 import type { IUser } from 'src/models/user.models'
 import ResearchForm from 'src/pages/Research/Content/Common/Research.form'
@@ -77,7 +77,7 @@ const EditResearch = observer((props: IProps) => {
     return isLoading ? (
       <Loader />
     ) : (
-      <Text txtcenter mt="50px" sx={{ width: '100%' }}>
+      <Text mt="50px" sx={{ width: '100%', textAlign: 'center' }}>
         Research not found
       </Text>
     )

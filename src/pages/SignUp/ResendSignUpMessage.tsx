@@ -1,11 +1,9 @@
 import React from 'react'
-import Flex from 'src/components/Flex'
-import Heading from 'src/components/Heading'
+import { Card, Flex, Heading } from 'theme-ui'
 import styled from '@emotion/styled'
 import theme from 'src/themes/styled.theme'
-import { Button } from 'oa-components'
+import { Button, FieldInput } from 'oa-components'
 import { Form, Field } from 'react-final-form'
-import { InputField } from 'src/components/Form/Fields'
 import { logger } from 'src/logger'
 
 const Label = styled.label`
@@ -58,62 +56,54 @@ class ResendSignUpMessagePage extends React.Component<IProps, IState> {
               mb={3}
             >
               <Flex sx={{ flexDirection: 'column', width: '100%' }}>
-                <Flex
-                  card
-                  mediumRadius
-                  bg={'softblue'}
-                  px={3}
-                  py={2}
-                  sx={{ width: '100%' }}
-                >
-                  <Heading medium sx={{ width: '100%' }}>
-                    Something didn't work
-                  </Heading>
-                </Flex>
-                <Flex
-                  card
-                  mediumRadius
-                  bg={'white'}
-                  mt={3}
-                  px={4}
-                  pt={0}
-                  pb={4}
-                  sx={{
-                    flexWrap: 'wrap',
-                    flexDirection: 'column',
-                    width: '100%',
-                  }}
-                >
-                  <Heading small py={4} sx={{ width: '100%' }}>
-                    Resend email
-                  </Heading>
-                  <Flex sx={{ flexDirection: 'column' }} mb={3}>
-                    <Flex
-                      mb={3}
-                      sx={{
-                        flexDirection: 'column',
-                        width: ['100%', '100%', `${(2 / 3) * 100}%`],
-                      }}
-                    >
-                      <Label htmlFor="email">Email</Label>
-                      <Field
-                        name="email"
-                        type="email"
-                        id="email"
-                        component={InputField}
-                        autoComplete="email"
-                      />
-                    </Flex>
-                    <Button
-                      sx={{ width: '100%' }}
-                      variant={'primary'}
-                      disabled={disabled}
-                      type="submit"
-                    >
-                      Resend
-                    </Button>
+                <Card bg={'softblue'}>
+                  <Flex px={3} py={2} sx={{ width: '100%' }}>
+                    <Heading>Something didn't work</Heading>
                   </Flex>
-                </Flex>
+                </Card>
+                <Card mt={3}>
+                  <Flex
+                    px={4}
+                    pt={0}
+                    pb={4}
+                    sx={{
+                      flexWrap: 'wrap',
+                      flexDirection: 'column',
+                      width: '100%',
+                    }}
+                  >
+                    <Heading variant="small" py={4} sx={{ width: '100%' }}>
+                      Resend email
+                    </Heading>
+                    <Flex sx={{ flexDirection: 'column' }} mb={3}>
+                      <Flex
+                        mb={3}
+                        sx={{
+                          flexDirection: 'column',
+                          width: ['100%', '100%', `${(2 / 3) * 100}%`],
+                        }}
+                      >
+                        <Label htmlFor="email">Email</Label>
+                        <Field
+                          name="email"
+                          type="email"
+                          id="email"
+                          component={FieldInput}
+                          autoComplete="email"
+                        />
+                      </Flex>
+                      <Button
+                        sx={{ width: '100%' }}
+                        variant={'primary'}
+                        disabled={disabled}
+                        type="submit"
+                      >
+                        Resend
+                      </Button>
+                    </Flex>
+                  </Flex>
+                </Card>
+
                 <Flex mt={3} sx={{ justifyContent: 'flex-end' }}>
                   <Button variant="tertiary">Home</Button>
                 </Flex>

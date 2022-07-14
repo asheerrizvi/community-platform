@@ -5,14 +5,15 @@ import * as React from 'react'
 import { Field, Form } from 'react-final-form'
 import type { RouteComponentProps } from 'react-router'
 import { Prompt } from 'react-router'
-import { Box } from 'theme-ui'
+import { Box, Card, Flex, Heading } from 'theme-ui'
 import IconHeaderHowto from 'src/assets/images/header-section/howto-header-icon.svg'
-import { Button } from 'oa-components'
-import ElWithBeforeIcon from 'src/components/ElWithBeforeIcon'
-import Flex from 'src/components/Flex'
-import { InputField, TextAreaField } from 'src/components/Form/Fields'
+import {
+  Button,
+  FieldInput,
+  FieldTextarea,
+  ElWithBeforeIcon,
+} from 'oa-components'
 import { TagsSelectField } from 'src/components/Form/TagsSelect.field'
-import Heading from 'src/components/Heading'
 import type { IResearch } from 'src/models/research.models'
 import { useResearchStore } from 'src/stores/Research/research.store'
 import theme from 'src/themes/styled.theme'
@@ -151,98 +152,88 @@ const ResearchForm = observer((props: IProps) => {
                 <FormContainer id="researchForm" onSubmit={handleSubmit}>
                   {/* Research Info */}
                   <Flex sx={{ flexDirection: 'column' }}>
-                    <Flex
-                      card
-                      mediumRadius
-                      bg={theme.colors.softblue}
-                      px={3}
-                      py={2}
-                      sx={{ alignItems: 'center' }}
-                    >
-                      <Heading medium>
-                        {props.parentType === 'create' ? (
-                          <span>Start your Research</span>
-                        ) : (
-                          <span>Edit your Research</span>
-                        )}{' '}
-                      </Heading>
-                      <Box ml="15px">
-                        <ElWithBeforeIcon
-                          IconUrl={IconHeaderHowto}
-                          height="20px"
-                        />
-                      </Box>
-                    </Flex>
+                    <Card bg={theme.colors.softblue}>
+                      <Flex px={3} py={2} sx={{ alignItems: 'center' }}>
+                        <Heading>
+                          {props.parentType === 'create' ? (
+                            <span>Start your Research</span>
+                          ) : (
+                            <span>Edit your Research</span>
+                          )}{' '}
+                        </Heading>
+                        <Box ml="15px">
+                          <ElWithBeforeIcon icon={IconHeaderHowto} size={20} />
+                        </Box>
+                      </Flex>
+                    </Card>
                     <Box
                       sx={{ mt: '20px', display: ['block', 'block', 'none'] }}
                     >
                       <PostingGuidelines />
                     </Box>
-                    <Flex
-                      card
-                      mediumRadius
-                      bg={'white'}
-                      mt={3}
-                      p={4}
-                      sx={{ flexWrap: 'wrap', flexDirection: 'column' }}
-                    >
+                    <Card mt={3}>
                       <Flex
-                        mx={-2}
-                        sx={{ flexDirection: ['column', 'column', 'row'] }}
+                        p={4}
+                        sx={{ flexWrap: 'wrap', flexDirection: 'column' }}
                       >
                         <Flex
-                          px={2}
-                          sx={{ flexDirection: 'column', flex: [1, 1, 4] }}
+                          mx={-2}
+                          sx={{ flexDirection: ['column', 'column', 'row'] }}
                         >
-                          <Flex sx={{ flexDirection: 'column' }} mb={3}>
-                            <Label htmlFor="title">
-                              Title of your research. Can we...
-                            </Label>
-                            <Field
-                              id="title"
-                              name="title"
-                              data-cy="intro-title"
-                              validateFields={[]}
-                              validate={validateTitle}
-                              isEqual={COMPARISONS.textInput}
-                              component={InputField}
-                              maxLength="60"
-                              placeholder="Can we make a chair from.. (max 60 characters)"
-                            />
-                          </Flex>
-                          <Flex sx={{ flexDirection: 'column' }} mb={3}>
-                            <Label htmlFor="description">
-                              What are you trying to find out?
-                            </Label>
-                            <Field
-                              id="description"
-                              name="description"
-                              data-cy="intro-description"
-                              validate={required}
-                              validateFields={[]}
-                              isEqual={COMPARISONS.textInput}
-                              component={TextAreaField}
-                              style={{
-                                resize: 'none',
-                                flex: 1,
-                                minHeight: '150px',
-                              }}
-                              maxLength="1000"
-                              placeholder="Introduction to your research question. Mention what you want to do, whats the goal and what challenges you see etc (max 1000 characters)"
-                            />
-                          </Flex>
-                          <Flex sx={{ flexDirection: 'column' }} mb={3}>
-                            <Label>Select tags for your Research</Label>
-                            <Field
-                              name="tags"
-                              component={TagsSelectField}
-                              category="research"
-                              isEqual={COMPARISONS.tags}
-                            />
+                          <Flex
+                            px={2}
+                            sx={{ flexDirection: 'column', flex: [1, 1, 4] }}
+                          >
+                            <Flex sx={{ flexDirection: 'column' }} mb={3}>
+                              <Label htmlFor="title">
+                                Title of your research. Can we...
+                              </Label>
+                              <Field
+                                id="title"
+                                name="title"
+                                data-cy="intro-title"
+                                validateFields={[]}
+                                validate={validateTitle}
+                                isEqual={COMPARISONS.textInput}
+                                component={FieldInput}
+                                maxLength="60"
+                                placeholder="Can we make a chair from.. (max 60 characters)"
+                              />
+                            </Flex>
+                            <Flex sx={{ flexDirection: 'column' }} mb={3}>
+                              <Label htmlFor="description">
+                                What are you trying to find out?
+                              </Label>
+                              <Field
+                                id="description"
+                                name="description"
+                                data-cy="intro-description"
+                                validate={required}
+                                validateFields={[]}
+                                isEqual={COMPARISONS.textInput}
+                                component={FieldTextarea}
+                                style={{
+                                  resize: 'none',
+                                  flex: 1,
+                                  minHeight: '150px',
+                                }}
+                                maxLength="1000"
+                                placeholder="Introduction to your research question. Mention what you want to do, whats the goal and what challenges you see etc (max 1000 characters)"
+                              />
+                            </Flex>
+                            <Flex sx={{ flexDirection: 'column' }} mb={3}>
+                              <Label>Select tags for your Research</Label>
+                              <Field
+                                name="tags"
+                                component={TagsSelectField}
+                                category="research"
+                                isEqual={COMPARISONS.tags}
+                              />
+                            </Flex>
                           </Flex>
                         </Flex>
                       </Flex>
-                    </Flex>
+                    </Card>
                   </Flex>
                 </FormContainer>
               </Flex>

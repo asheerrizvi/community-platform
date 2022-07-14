@@ -68,7 +68,9 @@ describe('[How To]', () => {
       time: '1-2 weeks',
       title: 'Create a how-to test',
       slug: 'create-a-how-to-test',
+      fileLink: 'http://google.com/',
       files: [],
+      total_downloads: 0,
       tags: {
         EOVeOZaKKw1UJkDIf3c3: true,
       },
@@ -130,6 +132,7 @@ describe('[How To]', () => {
       selectDifficultLevel(expected.difficulty_level as Difficulty)
 
       cy.get('[data-cy=intro-description]').type(expected.description)
+      cy.get('[data-cy=fileLink]').type(expected.fileLink)
       cy.step('Upload a cover for the intro')
       cy.get('[data-cy=intro-cover]')
         .find(':file')
@@ -157,6 +160,9 @@ describe('[How To]', () => {
         .should('include', `/how-to/create-a-how-to-test`)
 
       cy.step('Howto was created correctly')
+      cy.get('[data-cy=file-download-counter]')
+        .contains(expected.total_downloads)
+        .should('exist')
       cy.queryDocuments('howtos', 'title', '==', expected.title).then(
         (docs) => {
           cy.log('queryDocs', docs)
@@ -216,6 +222,8 @@ describe('[How To]', () => {
       description: 'After editing, all changes are reverted',
       difficulty_level: 'Hard',
       files: [],
+      fileLink: 'http://google.com/',
+      total_downloads: 10,
       slug: 'this-is-an-edit-test',
       tags: { EOVeOZaKKw1UJkDIf3c3: true },
       time: '3-4 weeks',
@@ -349,6 +357,9 @@ describe('[How To]', () => {
         .url()
         .should('include', '/how-to/this-is-an-edit-test')
       cy.get('[data-cy=how-to-basis]').contains('This is an edit test')
+      cy.get('[data-cy=file-download-counter]')
+        .contains(expected.total_downloads)
+        .should('exist')
       cy.queryDocuments('howtos', 'title', '==', 'This is an edit test').then(
         (docs) => {
           cy.log('queryDocs', docs)

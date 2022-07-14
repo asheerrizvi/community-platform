@@ -6,23 +6,24 @@ import type { HowtoStore } from 'src/stores/Howto/howto.store'
 import HowtoDescription from './HowtoDescription/HowtoDescription'
 import Step from './Step/Step'
 import type { IHowtoDB } from 'src/models/howto.models'
-import Text from 'src/components/Text'
-import { Box, Flex } from 'theme-ui'
-import { Button } from 'oa-components'
+import { Box, Flex, Text } from 'theme-ui'
+import { Button, Loader } from 'oa-components'
 import styled from '@emotion/styled'
 import theme from 'src/themes/styled.theme'
 import WhiteBubble0 from 'src/assets/images/white-bubble_0.svg'
 import WhiteBubble1 from 'src/assets/images/white-bubble_1.svg'
 import WhiteBubble2 from 'src/assets/images/white-bubble_2.svg'
 import WhiteBubble3 from 'src/assets/images/white-bubble_3.svg'
-import { Link } from 'src/components/Links'
-import { Loader } from 'src/components/Loader'
 import type { UserStore } from 'src/stores/User/user.store'
 import { HowToComments } from './HowToComments/HowToComments'
 import type { AggregationsStore } from 'src/stores/Aggregations/aggregations.store'
+import { seoTagsUpdate } from 'src/utils/seo'
+import { Link } from 'react-router-dom'
+import type { UserComment } from 'src/models'
 // The parent container injects router props along with a custom slug parameter (RouteComponentProps<IRouterCustomParams>).
 // We also have injected the doc store to access its methods to get doc by slug.
 // We can't directly provide the store as a prop though, and later user a get method to define it
+
 interface IRouterCustomParams {
   slug: string
 }
@@ -124,9 +125,17 @@ export class Howto extends React.Component<
   public async componentDidMount() {
     const slug = this.props.match.params.slug
     await this.store.setActiveHowtoBySlug(slug)
+    seoTagsUpdate({
+      title: this.store.activeHowto?.title,
+      description: this.store.activeHowto?.description,
+      imageUrl: this.store.activeHowto?.cover_image.downloadUrl,
+    })
     this.setState({
       isLoading: false,
     })
+  }
+  public async componentWillUnmount() {
+    seoTagsUpdate({})
   }
 
   public render() {
@@ -140,6 +149,15 @@ export class Howto extends React.Component<
       const votedUsefulCount = aggregations.users_votedUsefulHowtos
         ? aggregations.users_votedUsefulHowtos[activeHowto._id] || 0
         : undefined
+
+      const activeHowToComments: UserComment[] = this.store
+        .getActiveHowToComments()
+        .map((c): UserComment => {
+          return {
+            ...c,
+            isEditable: c._creatorId === this.injected.userStore.user?.userName,
+          }
+        })
 
       return (
         <>
@@ -163,9 +181,16 @@ export class Howto extends React.Component<
               <Step step={step} key={index} stepindex={index} />
             ))}
           </Box>
-          <HowToComments comments={activeHowto.comments} />
+          <HowToComments comments={activeHowToComments} />
           <MoreBox py={20} mt={20}>
-            <Text bold txtcenter sx={{ fontSize: [4, 4, 5], display: 'block' }}>
+            <Text
+              sx={{
+                fontSize: [4, 4, 5],
+                display: 'block',
+                fontWeight: 'bold',
+                textAlign: 'center',
+              }}
+            >
               You're done.
               <br />
               Nice one!

@@ -2,12 +2,11 @@ import { Box, Image } from 'theme-ui'
 import EventsIcon from 'src/assets/icons/icon-events.svg'
 import HowToCountIcon from 'src/assets/icons/icon-how-to.svg'
 import VerifiedBadgeIcon from 'src/assets/icons/icon-verified-badge.svg'
-import ElWithBeforeIcon from 'src/components/ElWithBeforeIcon'
-import { Icon } from 'oa-components'
-import { Link } from 'src/components/Links'
+import { Icon, ElWithBeforeIcon } from 'oa-components'
 import type { IUserPP } from 'src/models'
 import theme from 'src/themes/styled.theme'
 import styled from '@emotion/styled'
+import { Link } from 'react-router-dom'
 
 export const UserStatsBoxItem = styled.div`
   margin: ${theme.space[2]}px 0;
@@ -50,27 +49,34 @@ export const UserStats = ({ user }: IProps) => {
     <UserStatsBox mt={3} p={2} pb={0}>
       {user.badges?.verified && (
         <UserStatsBoxItem>
-          <Image src={VerifiedBadgeIcon} width="22px" height="22px" />
+          <Image
+            loading="lazy"
+            src={VerifiedBadgeIcon}
+            width="22px"
+            height="22px"
+          />
           <Box ml="5px">Verified</Box>
         </UserStatsBoxItem>
       )}
       {user.location?.latlng && (
-        <Link color={'black'} to={'/map/#' + user.userName}>
+        <Link to={'/map/#' + user.userName}>
           <UserStatsBoxItem>
             <Icon glyph="location-on" size="22"></Icon>
-            <Box ml="5px">{user.location?.country || 'View on Map'}</Box>
+            <Box ml="5px" color={'black'}>
+              {user.location?.country || 'View on Map'}
+            </Box>
           </UserStatsBoxItem>
         </Link>
       )}
       {howtoCount > 0 && (
         <UserStatsBoxItem>
-          <ElWithBeforeIcon IconUrl={HowToCountIcon} />
+          <ElWithBeforeIcon icon={HowToCountIcon} />
           How‑to:&nbsp;{howtoCount}
         </UserStatsBoxItem>
       )}
       {eventCount > 0 && (
         <UserStatsBoxItem>
-          <ElWithBeforeIcon IconUrl={EventsIcon} />
+          <ElWithBeforeIcon icon={EventsIcon} />
           Events:&nbsp;{eventCount}
         </UserStatsBoxItem>
       )}

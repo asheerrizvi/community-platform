@@ -1,30 +1,36 @@
 import { observer } from 'mobx-react'
-import { Box, Flex } from 'theme-ui'
+import { Box, Flex, Heading } from 'theme-ui'
 import { AuthWrapper } from 'src/components/Auth/AuthWrapper'
 import { Button } from 'oa-components'
-import Heading from 'src/components/Heading'
-import { Link } from 'src/components/Links'
 import ResearchListItem from './ResearchListItem'
 import { useResearchStore } from 'src/stores/Research/research.store'
+import { useTheme } from '@emotion/react'
+import { Link } from 'react-router-dom'
 
 const ResearchList = observer(() => {
   const store = useResearchStore()
+  const theme = useTheme()
+
   const { filteredResearches } = store
   return (
     <>
       <Flex py={26}>
-        <Heading medium bold txtcenter sx={{ width: '100%' }}>
+        <Heading
+          sx={{
+            width: '100%',
+            textAlign: 'center',
+            fontWeight: 'bold',
+            fontSize: theme.fontSizes[5],
+          }}
+        >
           Research topics. Can we...
         </Heading>
       </Flex>
       {filteredResearches.map((item) => (
         <ResearchListItem key={item._id} item={item} />
       ))}
-      <Box mb={4}>
-        <Link
-          to={store.activeUser ? '/research/create' : 'sign-up'}
-          mb={[3, 3, 0]}
-        >
+      <Box mb={[3, 3, 0]}>
+        <Link to={store.activeUser ? '/research/create' : 'sign-up'}>
           <AuthWrapper roleRequired="beta-tester">
             <Button>Add Research</Button>
           </AuthWrapper>
