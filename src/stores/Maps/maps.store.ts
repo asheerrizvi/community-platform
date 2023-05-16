@@ -12,8 +12,8 @@ import type { Subscription } from 'rxjs'
 import { ModuleStore } from '../common/module.store'
 import { getUserAvatar } from '../User/user.store'
 import { MAP_GROUPINGS } from './maps.groupings'
-import { generatePins, generatePinDetails } from 'src/mocks/maps.mock'
-import type { IUserPP } from 'src/models/user_pp.models'
+import { generatePins, generatePinDetails } from 'src/stores/Maps/generatePins'
+import type { IUserPP } from 'src/models/userPreciousPlastic.models'
 import type { IUploadedFileMeta } from '../storage'
 import {
   hasAdminRights,
@@ -25,27 +25,22 @@ import { filterMapPinsByType } from './filter'
 
 // NOTE - toggle below variable to use larger mock dataset
 const IS_MOCK = false
-const MOCK_PINS = generatePins(250)
 const COLLECTION_NAME: IDBEndpoint = 'mappins'
 export class MapsStore extends ModuleStore {
   mapPins$: Subscription
+  @observable
+  public activePinFilters: Array<IMapGrouping> = []
+  @observable
+  public activePin: IMapPin | IMapPinWithDetail | undefined = undefined
+  @observable
+  private mapPins: Array<IMapPin> = []
+  @observable
+  public filteredPins: Array<IMapPin> = []
   // eslint-disable-next-line
   constructor(rootStore: RootStore) {
     super(rootStore)
     makeObservable(this)
   }
-
-  @observable
-  public activePinFilters: Array<IMapGrouping> = []
-
-  @observable
-  public activePin: IMapPin | IMapPinWithDetail | undefined = undefined
-
-  @observable
-  private mapPins: Array<IMapPin> = []
-
-  @observable
-  public filteredPins: Array<IMapPin> = []
 
   @action
   private processDBMapPins(pins: IMapPin[]) {
@@ -71,7 +66,7 @@ export class MapsStore extends ModuleStore {
         return { ...p, verified: this.userStore.verifiedUsers[p._id] === true }
       })
     if (IS_MOCK) {
-      pins = MOCK_PINS
+      pins = generatePins(250)
     }
     this.mapPins = pins
     this.filteredPins = this.mapPins
@@ -130,7 +125,7 @@ export class MapsStore extends ModuleStore {
   public async setActivePin(pin?: IMapPin | IMapPinWithDetail) {
     // HACK - CC - 2021-07-14 ignore hardcoded pin details, should be retrieved
     // from profile on open instead (needs cleaning from DB)
-    if (pin && pin.hasOwnProperty('detail')) {
+    if (pin && Object.prototype.hasOwnProperty.call(pin, 'detail')) {
       delete pin['detail']
     }
     this.activePin = pin
@@ -218,6 +213,7 @@ export class MapsStore extends ModuleStore {
         displayName: username,
         profileUrl: `${window.location.origin}/u/${username}`,
         verifiedBadge: false,
+        country: null,
       }
     }
     const avatar = getUserAvatar(username)
@@ -235,6 +231,7 @@ export class MapsStore extends ModuleStore {
       displayName: u.displayName,
       profileUrl: `${window.location.origin}/u/${u.userName}`,
       verifiedBadge: !!u.badges?.verified,
+      country: u.location?.countryCode || u.country?.toLowerCase() || null,
     }
   }
   @action

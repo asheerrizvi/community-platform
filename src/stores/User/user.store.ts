@@ -1,26 +1,22 @@
-import { observable, action, makeObservable, toJS, computed } from 'mobx'
-import type {
-  INotification,
-  IUser,
-  IUserDB,
-  NotificationType,
-} from 'src/models/user.models'
-import type { IUserPP, IUserPPDB } from 'src/models/user_pp.models'
-import type { IFirebaseUser } from 'src/utils/firebase'
-import { auth, EmailAuthProvider } from 'src/utils/firebase'
-import type { RootStore } from '..'
+import { action, computed, makeObservable, observable, toJS } from 'mobx'
+import { logger } from '../../logger'
+import { auth, EmailAuthProvider } from '../../utils/firebase'
+import { getLocationData } from '../../utils/getLocationData'
+import { formatLowerNoSpecial } from '../../utils/helpers'
+
 import { ModuleStore } from '../common/module.store'
 import { Storage } from '../storage'
-import type { IConvertedFileMeta } from 'src/types'
-import { formatLowerNoSpecial, randomID } from 'src/utils/helpers'
-import { logger } from 'src/logger'
-import { getLocationData } from 'src/utils/getLocationData'
 
+import type { IUser, IUserBadges, IUserDB } from 'src/models/user.models'
+import type { IUserPP, IUserPPDB } from 'src/models/userPreciousPlastic.models'
+import type { IFirebaseUser } from 'src/utils/firebase'
+import type { RootStore } from '..'
+import type { IConvertedFileMeta } from '../../types'
 /*
 The user store listens to login events through the firebase api and exposes logged in user information via an observer.
 */
 
-const COLLECTION_NAME = 'users'
+export const COLLECTION_NAME = 'users'
 
 export class UserStore extends ModuleStore {
   private authUnsubscribe: firebase.default.Unsubscribe
@@ -33,9 +29,23 @@ export class UserStore extends ModuleStore {
   @observable
   public updateStatus: IUserUpdateStatus = getInitialUpdateStatus()
 
+  constructor(rootStore: RootStore) {
+    super(rootStore)
+    makeObservable(this)
+    this._listenToAuthStateChanges()
+    // Update verified users on intial load. use timeout to ensure aggregation store initialised
+    setTimeout(() => {
+      this.loadVerifiedUsers()
+    }, 50)
+  }
   // redirect calls for verifiedUsers to the aggregation store list
   @computed get verifiedUsers(): { [user_id: string]: boolean } {
     return this.aggregationsStore.aggregations.users_verified || {}
+  }
+
+  @action
+  public getAllUsers() {
+    return this.allDocs$
   }
 
   @action
@@ -46,16 +56,6 @@ export class UserStore extends ModuleStore {
   @action
   public setUpdateStaus(update: keyof IUserUpdateStatus) {
     this.updateStatus[update] = true
-  }
-
-  constructor(rootStore: RootStore) {
-    super(rootStore)
-    makeObservable(this)
-    this._listenToAuthStateChanges()
-    // Update verified users on intial load. use timeout to ensure aggregation store initialised
-    setTimeout(() => {
-      this.loadVerifiedUsers()
-    }, 50)
   }
 
   // when registering a new user create firebase auth profile as well as database user profile
@@ -74,7 +74,7 @@ export class UserStore extends ModuleStore {
         photoURL: authReq.user.photoURL,
       })
       // populate db user profile and resume auth listener
-      await this.createUserProfile()
+      await this._createUserProfile()
       // when checking auth state change also send confirmation email
       this._listenToAuthStateChanges(true)
     }
@@ -119,7 +119,7 @@ export class UserStore extends ModuleStore {
           .doc(userMeta._id)
           .set({ ...userMeta, _lastActive: new Date().toISOString() })
       } else {
-        await this.createUserProfile()
+        await this._createUserProfile()
         // now that a profile has been created, run this function again (use `newUserCreated` to avoid inf. loop in case not create not working correctly)
         if (!newUserCreated) {
           return this.userSignedIn(user, true)
@@ -129,6 +129,13 @@ export class UserStore extends ModuleStore {
         // )
       }
     }
+  }
+
+  public async getUserByUsername(username: string) {
+    const [user] = await this.db
+      .collection<IUserPP>(COLLECTION_NAME)
+      .getWhere('_id', '==', username)
+    return user
   }
 
   // TODO
@@ -147,6 +154,17 @@ export class UserStore extends ModuleStore {
       .collection<IUserPP>(COLLECTION_NAME)
       .getWhere('_id', '==', _authID)
     return lookup2[0]
+  }
+
+  public async updateUserBadge(userId: string, badges: IUserBadges) {
+    const dbRef = this.db.collection<IUserPP>(COLLECTION_NAME).doc(userId)
+    await this.db
+      .collection(COLLECTION_NAME)
+      .doc(userId)
+      .set({
+        ...toJS(await dbRef.get('server')),
+        badges,
+      })
   }
 
   /**
@@ -257,41 +275,13 @@ export class UserStore extends ModuleStore {
       authUser.email as string,
       reauthPw,
     )
-    try {
-      await authUser.reauthenticateWithCredential(credential)
-      const user = this.user as IUser
-      await this.db.collection(COLLECTION_NAME).doc(user.userName).delete()
-      await authUser.delete()
-      // TODO - delete user avatar
-      // TODO - show deleted notification
-    } catch (error) {
-      // TODO show notification if invalid credential
-      throw error
-    }
-  }
-
-  private async createUserProfile(fields: Partial<IUser> = {}) {
-    const authUser = auth.currentUser as firebase.default.User
-    const displayName = authUser.displayName as string
-    const userName = formatLowerNoSpecial(displayName)
-    const dbRef = this.db.collection<IUser>(COLLECTION_NAME).doc(userName)
-    logger.debug('creating user profile', userName)
-    if (!userName) {
-      throw new Error('No Username Provided')
-    }
-    const user: IUser = {
-      ...USER_BASE,
-      _authID: authUser.uid,
-      displayName,
-      userName,
-      moderation: 'awaiting-moderation',
-      votedUsefulHowtos: {},
-      votedUsefulResearch: {},
-      notifications: [],
-      ...fields,
-    }
-    // update db
-    await dbRef.set(user)
+    await authUser.reauthenticateWithCredential(credential)
+    const user = this.user as IUser
+    await this.db.collection(COLLECTION_NAME).doc(user.userName).delete()
+    await authUser.delete()
+    // TODO - delete user avatar
+    // TODO - show deleted notification
+    // TODO show notification if invalid credential
   }
 
   @action
@@ -308,7 +298,7 @@ export class UserStore extends ModuleStore {
 
       if (votedUsefulHowtos[howtoId]) {
         //get how to author from howtoid
-        this.triggerNotification(
+        this.userNotificationsStore.triggerNotification(
           'howto_useful',
           howtoAuthor,
           '/how-to/' + howtoSlug,
@@ -336,111 +326,13 @@ export class UserStore extends ModuleStore {
       votedUsefulResearch[researchId] = !votedUsefulResearch[researchId]
 
       if (votedUsefulResearch[researchId]) {
-        this.triggerNotification(
+        this.userNotificationsStore.triggerNotification(
           'research_useful',
           researchAuthor,
           '/research/' + researchSlug,
         )
       }
       await this.updateUserProfile({ votedUsefulResearch })
-    }
-  }
-
-  // use firebase auth to listen to change to signed in user
-  // on sign in want to load user profile
-  // strange implementation return the unsubscribe object on subscription, so stored
-  // to authUnsubscribe variable for use later
-  private _listenToAuthStateChanges(checkEmailVerification = false) {
-    this.authUnsubscribe = auth.onAuthStateChanged((authUser) => {
-      this.authUser = authUser
-      if (authUser) {
-        this.userSignedIn(authUser)
-        // send verification email if not verified and after first sign-up only
-        if (!authUser.emailVerified && checkEmailVerification) {
-          this.sendEmailVerification()
-        }
-      } else {
-        this.updateActiveUser(undefined)
-      }
-    })
-  }
-
-  private _unsubscribeFromAuthStateChanges() {
-    this.authUnsubscribe()
-  }
-
-  @action
-  public async triggerNotification(
-    type: NotificationType,
-    username: string,
-    relevantUrl: string,
-  ) {
-    try {
-      const triggeredBy = this.activeUser
-      if (triggeredBy) {
-        // do not get notified when you're the one making a new comment or how-to useful vote
-        if (triggeredBy.userName === username) {
-          return
-        }
-        const newNotification: INotification = {
-          _id: randomID(),
-          _created: new Date().toISOString(),
-          triggeredBy: {
-            displayName: triggeredBy.displayName,
-            userId: triggeredBy._id,
-          },
-          relevantUrl: relevantUrl,
-          type: type,
-          read: false,
-        }
-
-        const lookup = await this.db
-          .collection<IUserPP>(COLLECTION_NAME)
-          .getWhere('userName', '==', username)
-
-        const user = lookup[0]
-
-        const updatedUser: IUser = {
-          ...toJS(user),
-          notifications: user.notifications
-            ? [...toJS(user.notifications), newNotification]
-            : [newNotification],
-        }
-
-        const dbRef = this.db
-          .collection<IUser>(COLLECTION_NAME)
-          .doc(updatedUser._authID)
-
-        await dbRef.set(updatedUser)
-      }
-    } catch (err) {
-      console.error(err)
-      throw new Error(err)
-    }
-  }
-
-  @action
-  public async markAllNotificationsRead() {
-    try {
-      const user = this.activeUser
-      if (user) {
-        const notifications = toJS(user.notifications)
-        notifications?.forEach((notification) => (notification.read = true))
-        const updatedUser: IUser = {
-          ...toJS(user),
-          notifications,
-        }
-
-        const dbRef = this.db
-          .collection<IUser>(COLLECTION_NAME)
-          .doc(updatedUser._authID)
-
-        await dbRef.set(updatedUser)
-        await this.updateUserProfile({ notifications })
-      }
-    } catch (err) {
-      console.error(err)
-      throw new Error(err)
     }
   }
 
@@ -466,9 +358,65 @@ export class UserStore extends ModuleStore {
         //TODO: ensure current user is updated
       }
     } catch (err) {
-      console.error(err)
+      logger.error(err)
       throw new Error(err)
     }
+  }
+
+  private async _createUserProfile() {
+    const authUser = auth.currentUser as firebase.default.User
+    const displayName = authUser.displayName as string
+    const userName = formatLowerNoSpecial(displayName)
+    const dbRef = this.db.collection<IUser>(COLLECTION_NAME).doc(userName)
+    logger.debug('creating user profile', userName)
+    if (!userName) {
+      throw new Error('No Username Provided')
+    }
+    const user: IUser = {
+      coverImages: [],
+      links: [],
+      moderation: 'awaiting-moderation',
+      verified: false,
+      _authID: authUser.uid,
+      displayName,
+      userName,
+      votedUsefulHowtos: {},
+      votedUsefulResearch: {},
+      notifications: [],
+    }
+    // update db
+    await dbRef.set(user)
+  }
+
+  // use firebase auth to listen to change to signed in user
+  // on sign in want to load user profile
+  // strange implementation return the unsubscribe object on subscription, so stored
+  // to authUnsubscribe variable for use later
+  private _listenToAuthStateChanges(checkEmailVerification = false) {
+    this.authUnsubscribe = auth.onAuthStateChanged((authUser) => {
+      this.authUser = authUser
+      if (authUser) {
+        this.userSignedIn(authUser)
+        // send verification email if not verified and after first sign-up only
+        if (!authUser.emailVerified && checkEmailVerification) {
+          this.sendEmailVerification()
+        }
+      } else {
+        this.updateActiveUser(undefined)
+      }
+    })
+  }
+
+  private _unsubscribeFromAuthStateChanges() {
+    this.authUnsubscribe()
+  }
+
+  /**
+   * Do not use.
+   * This exists for testing purposes only.
+   */
+  public _testSetUser(user: IUserPPDB) {
+    this.user = user
   }
 }
 
@@ -477,7 +425,7 @@ interface IUserUpdateStatus {
   Complete: boolean
 }
 
-function getInitialUpdateStatus() {
+const getInitialUpdateStatus = () => {
   const status: IUserUpdateStatus = {
     Start: false,
     Complete: false,
@@ -491,11 +439,4 @@ function getInitialUpdateStatus() {
 // take the username and return matching avatar url (includes undefined.jpg match if no user)
 export const getUserAvatar = (userName: string | undefined) => {
   return Storage.getPublicDownloadUrl(`avatars/${userName}.jpg`)
-}
-
-const USER_BASE = {
-  coverImages: [],
-  links: [],
-  moderation: 'awaiting-moderation',
-  verified: false,
 }

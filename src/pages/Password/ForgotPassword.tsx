@@ -1,7 +1,9 @@
 import React from 'react'
 import { Card, Flex, Heading } from 'theme-ui'
 import styled from '@emotion/styled'
-import theme from 'src/themes/styled.theme'
+// TODO: Remove direct usage of Theme
+import { preciousPlasticTheme } from 'oa-themes'
+const theme = preciousPlasticTheme.styles
 import { Button, FieldInput } from 'oa-components'
 import { Form, Field } from 'react-final-form'
 import { logger } from 'workbox-core/_private'
@@ -105,7 +107,7 @@ class ForgotPasswordPage extends React.Component<IProps, IState> {
                   </Flex>
                 </Card>
                 <Flex mt={3} sx={{ justifyContent: 'flex-end' }}>
-                  <Button variant="tertiary">Close</Button>
+                  <Button variant={'outline'}>Close</Button>
                 </Flex>
               </Flex>
             </Flex>

@@ -3,7 +3,9 @@ import { Field, Form } from 'react-final-form'
 import { Button, FieldInput } from 'oa-components'
 import type { UserStore } from 'src/stores/User/user.store'
 import { Text, Flex } from 'theme-ui'
-import theme from 'src/themes/styled.theme'
+// TODO: Remove direct usage of Theme
+import { preciousPlasticTheme } from 'oa-themes'
+const theme = preciousPlasticTheme.styles
 import styled from '@emotion/styled'
 
 interface IFormValues {
@@ -55,6 +57,7 @@ export class ChangePasswordForm extends React.Component<IProps, IState> {
       <>
         <Button
           my={3}
+          mr={2}
           variant={'secondary'}
           onClick={() =>
             this.setState({

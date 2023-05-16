@@ -1,4 +1,5 @@
-import { getSupportedProfileTypes, ProfileType } from 'src/modules/profile'
+import { getSupportedProfileTypes } from 'src/modules/profile'
+import { ProfileType } from 'src/modules/profile/types'
 
 // Highlights
 import CollectionHighlight from 'src/assets/images/highlights/highlight-collection-point.svg'
@@ -10,7 +11,9 @@ import MemberHighlight from 'src/assets/images/highlights/highlight-member.svg'
 // assets profileType
 import MemberBadge from 'src/assets/images/badges/pt-member.svg'
 
-function findWordspaceHighlight(workspaceType?: string): string {
+import type { PlatformTheme } from 'oa-themes'
+
+const findWordspaceHighlight = (workspaceType?: string): string => {
   switch (workspaceType) {
     case ProfileType.WORKSPACE:
       return WorkspaceHighlight
@@ -27,10 +30,10 @@ function findWordspaceHighlight(workspaceType?: string): string {
   }
 }
 
-function findWorkspaceBadgeNullable(
+const findWorkspaceBadgeNullable = (
   workspaceType?: string,
   useCleanImage?: boolean,
-): string | null {
+): string | null => {
   if (!workspaceType) {
     return null
   }
@@ -50,16 +53,17 @@ function findWorkspaceBadgeNullable(
   return foundProfileTypeObj.imageSrc || null
 }
 
-function findWorkspaceBadge(
+const findWorkspaceBadge = (
   workspaceType?: string,
   ifCleanImage?: boolean,
   verifiedUser?: boolean,
-): string {
+  currentTheme?: PlatformTheme,
+): string => {
   if (!workspaceType) {
     return MemberBadge
   }
 
-  const foundProfileTypeObj = getSupportedProfileTypes().find(
+  const foundProfileTypeObj = getSupportedProfileTypes(currentTheme).find(
     (type) => type.label === workspaceType,
   )
   if (foundProfileTypeObj) {

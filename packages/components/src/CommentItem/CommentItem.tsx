@@ -1,10 +1,11 @@
 import { createRef, useEffect, useState } from 'react'
-import Linkify from 'react-linkify'
-import { Link } from 'react-router-dom'
-import { Button, EditComment, Modal } from '../index'
 import { Box, Flex, Text } from 'theme-ui'
-import { FlagIconHowTos } from '../FlagIcon/FlagIcon'
-import { Icon } from '../Icon/Icon'
+import { Button } from '../Button/Button'
+import { ConfirmModal } from '../ConfirmModal/ConfirmModal'
+import { EditComment } from '../EditComment/EditComment'
+import { LinkifyText } from '../LinkifyText/LinkifyText'
+import { Modal } from '../Modal/Modal'
+import { Username } from '../Username/Username'
 
 export interface CommentItemProps {
   text: string
@@ -30,6 +31,7 @@ const formatDate = (d: string | undefined): string => {
 export const CommentItem = (props: CommentItemProps) => {
   const textRef = createRef<any>()
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [textHeight, setTextHeight] = useState(0)
   const [isShowMore, setShowMore] = useState(false)
   const {
@@ -46,7 +48,6 @@ export const CommentItem = (props: CommentItemProps) => {
     isEditable,
   } = props
 
-  console.log(isEditable)
   useEffect(() => {
     if (textRef.current) {
       setTextHeight(textRef.current.scrollHeight)
@@ -57,12 +58,18 @@ export const CommentItem = (props: CommentItemProps) => {
     setShowMore(!isShowMore)
   }
 
+  const onEditRequest = (_id: string) => {
+    if (handleEditRequest) {
+      handleEditRequest(_id)
+      return setShowEditModal(true)
+    }
+  }
+
   return (
-    <Box data-cy="comment">
+    <Box id={`comment:${_id}`} data-cy="comment">
       <Flex
         p="3"
         bg={'white'}
-        mb={4}
         sx={{
           width: '100%',
           flexDirection: 'column',
@@ -70,23 +77,13 @@ export const CommentItem = (props: CommentItemProps) => {
         }}
       >
         <Flex sx={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <Box>
-            {creatorCountry && <FlagIconHowTos code={creatorCountry} />}
-            <span style={{ marginLeft: creatorCountry ? '5px' : 0 }}>
-              <Link
-                style={{
-                  textDecoration: 'underline',
-                  color: 'inherit',
-                  display: 'inline-block',
-                  marginRight: '5px',
-                }}
-                to={'/u/' + creatorName}
-              >
-                {creatorName}
-              </Link>
-              {isUserVerified && <Icon glyph="verified" size={12} />}
-            </span>
-          </Box>
+          <Username
+            user={{
+              userName: creatorName,
+              countryCode: creatorCountry,
+            }}
+            isVerified={!!isUserVerified}
+          />
           <Flex sx={{ alignItems: 'center' }}>
             <>
               {_edited && (
@@ -108,12 +105,13 @@ export const CommentItem = (props: CommentItemProps) => {
             whiteSpace: 'pre-wrap',
             wordBreak: 'break-word',
             overflow: 'hidden',
-            lineHeight: '1em',
             maxHeight: isShowMore ? 'max-content' : '128px',
+            fontFamily: 'body',
+            lineHeight: 1.3,
           }}
           ref={textRef}
         >
-          <Linkify properties={{ target: '_blank' }}>{text}</Linkify>
+          <LinkifyText>{text}</LinkifyText>
         </Text>
         {textHeight > 129 && (
           <a
@@ -135,7 +133,7 @@ export const CommentItem = (props: CommentItemProps) => {
                 variant={'outline'}
                 small={true}
                 icon={'edit'}
-                onClick={() => handleEditRequest}
+                onClick={() => onEditRequest(_id)}
               >
                 edit
               </Button>
@@ -144,7 +142,7 @@ export const CommentItem = (props: CommentItemProps) => {
                 variant={'outline'}
                 small={true}
                 icon="delete"
-                onClick={() => handleDelete && handleDelete(_id)}
+                onClick={() => setShowDeleteModal(true)}
                 ml={2}
               >
                 delete
@@ -163,6 +161,14 @@ export const CommentItem = (props: CommentItemProps) => {
             handleCancel={() => setShowEditModal(false)}
           />
         </Modal>
+
+        <ConfirmModal
+          isOpen={showDeleteModal}
+          message="Are you sure you want to delete this comment?"
+          confirmButtonText="Delete"
+          handleCancel={() => setShowDeleteModal(false)}
+          handleConfirm={() => handleDelete && handleDelete(_id)}
+        />
       </Flex>
     </Box>
   )

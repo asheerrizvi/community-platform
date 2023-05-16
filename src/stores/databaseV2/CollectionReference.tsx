@@ -7,6 +7,7 @@ import type {
 import type { Observer } from 'rxjs'
 import { Observable } from 'rxjs'
 import { DocReference } from './DocReference'
+import { logger } from '../../logger'
 
 export class CollectionReference<T> {
   constructor(private endpoint: string, private clients: DBClients) {}
@@ -58,9 +59,6 @@ export class CollectionReference<T> {
           totals.live = updates.length
           await cacheDB.setBulkDocs(endpoint, updates)
           const allDocs = await cacheDB.getCollection<T>(endpoint)
-          // console.group(`[${endpoint}] docs retrieved`)
-          // console.table(totals)
-          // console.groupEnd()
           obs.next(allDocs)
         })
         // 4. Check for any document deletes, and remove as appropriate
@@ -114,10 +112,12 @@ export class CollectionReference<T> {
     field: string,
     operator: DBQueryWhereOperator,
     value: DBQueryWhereValue,
+    limit?: number,
   ) {
     const { serverDB, cacheDB } = this.clients
     let docs = await serverDB.queryCollection<T>(this.endpoint, {
       where: { field, operator, value },
+      limit,
     })
     // if not found on live try find on cached (might be offline)
     // use catch as not all endpoints are cached or some might not be indexed
@@ -125,9 +125,10 @@ export class CollectionReference<T> {
       try {
         docs = await cacheDB.queryCollection<T>(this.endpoint, {
           where: { field, operator, value },
+          limit,
         })
       } catch (error) {
-        console.error(error)
+        logger.error(error)
         // at least we can say we tried...
       }
     }

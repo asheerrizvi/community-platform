@@ -1,4 +1,4 @@
-import crypto from 'crypto'
+import { v4 as uuid } from 'uuid'
 
 describe('[How To]', () => {
   const SKIP_TIMEOUT = { timeout: 300 }
@@ -11,9 +11,6 @@ describe('[How To]', () => {
       cy.visit('/how-to')
     })
     it('[By Everyone]', () => {
-      cy.step('No tag is selected')
-      cy.get('.data-cy__multi-value__label').should('not.exist')
-
       cy.step('More How-tos button is hidden')
       cy.get('[data-cy=more-how-tos]', SKIP_TIMEOUT).should('be.hidden')
 
@@ -24,7 +21,7 @@ describe('[How To]', () => {
       cy.step('How-to cards has basic info')
       cy.get(`[data-cy=card] a[href="${howtoUrl}"]`).within(() => {
         cy.contains('Make glass-like beams').should('be.exist')
-        cy.contains('By howto_creator').should('be.exist')
+        cy.contains('howto_creator').should('be.exist')
         cy.get('img').should('have.attr', 'src').and('match', coverFileRegex)
         cy.contains('extrusion').should('be.exist')
       })
@@ -41,32 +38,21 @@ describe('[How To]', () => {
     })
   })
 
-  describe('[Filter with Tag]', () => {
+  describe('[Filter by Category]', () => {
     beforeEach(() => {
       cy.visit('/how-to')
     })
     it('[By Everyone]', () => {
-      cy.step('Select a tag')
-      cy.selectTag('product')
+      cy.step('Select a category')
+      cy.selectTag('product', '[data-cy="category-select"]')
       cy.get('[data-cy=card]').its('length').should('be.eq', 3)
 
-      cy.step('Type and select a tag')
-      cy.selectTag('injection')
+      cy.step('Type and select a category')
+      cy.selectTag('injection', '[data-cy="category-select"]')
 
       cy.get('[data-cy=card]').its('length').should('be.eq', 2)
 
-      cy.step('Remove a tag')
-      cy.get('.data-cy__multi-value__label')
-        .contains('injection')
-        .parent()
-        .find('.data-cy__multi-value__remove')
-        .click()
-      cy.get('.data-cy__multi-value__label')
-        .contains('injection')
-        .should('not.exist')
-      cy.get('[data-cy=card]').its('length').should('be.eq', 3)
-
-      cy.step('Remove all tags')
+      cy.step('Remove all category filter')
       cy.get('.data-cy__clear-indicator').click()
       cy.get('.data-cy__multi-value__label').should('not.exist')
       cy.get('[data-cy=card]').its('length').should('be.eq', totalHowTo)
@@ -87,7 +73,7 @@ describe('[How To]', () => {
 
         cy.step('How-to has basic info')
         cy.get('[data-cy=how-to-basis]').then(($summary) => {
-          expect($summary).to.contain('By howto_creator', 'Author')
+          expect($summary).to.contain('howto_creator', 'Author')
           expect($summary).to.contain('Last edit on', 'Edit')
           expect($summary).to.contain('Make an interlocking brick', 'Title')
           expect($summary).to.contain(
@@ -165,52 +151,27 @@ describe('[How To]', () => {
           .should('include', '/how-to')
       })
 
-      it('[Comment requires login]', () => {
+      it('[Views only visible for beta-testers]', () => {
         cy.visit(specificHowtoUrl)
-        cy.step(`Comment functionality prompts user to login`)
-        cy.get(`[data-cy="comments-login-prompt"]`).should('be.exist')
-
-        cy.get(`[data-cy="comments-form"]`).should('not.exist')
+        cy.step(`ViewsCounter should not be visible`)
+        cy.get('[data-cy="ViewsCounter"]').should('not.exist')
       })
     })
 
-    describe('[By Authenticated]', () => {
-      it('[Edit button is unavailable to non-resource owners]', () => {
-        cy.login('howto_reader@test.com', 'test1234')
+    describe('[By Beta-Tester]', () => {
+      it('[Views show on multiple howtos]', () => {
+        cy.login('demo_beta_tester@example.com', 'demo_beta_tester')
+
+        cy.step('Views show on first howto')
         cy.visit(specificHowtoUrl)
-        cy.get('[data-cy=edit]').should('not.exist')
-      })
+        cy.get('[data-cy="ViewsCounter"]').should('exist')
 
-      describe('[Commenting]', () => {
-        it('[Logged in user cannot edit a comment by another user]', () => {
-          cy.login('howto_reader@test.com', 'test1234')
-          cy.visit(specificHowtoUrl)
-          cy.get('[data-cy="howto-comments"]').should('exist')
-          cy.get('[data-cy="CommentItem: edit button"]').should('not.exist')
-        })
+        cy.step('Go back')
+        cy.get('[data-cy="go-back"]:eq(0)').as('topBackButton').click()
 
-        it('[Logged in user can add a comment]', () => {
-          const commentText = 'A short string intended to test commenting'
-          cy.login('howto_reader@test.com', 'test1234')
-          cy.visit(specificHowtoUrl)
-
-          cy.get(`[data-cy="comments-login-prompt"]`).should('not.exist')
-
-          cy.get(`[data-cy="comments-form"]`).should('be.exist')
-
-          cy.get('[data-cy="comments-form"]').type(commentText)
-
-          cy.get('[data-cy="comment-submit"]').click()
-
-          cy.get('[data-cy="comment-text"]').should('contain.text', commentText)
-        })
-
-        it('[Logged in user can edit the comment they have added]', () => {
-          cy.login('howto_reader@test.com', 'test1234')
-          cy.visit(specificHowtoUrl)
-
-          cy.get('[data-cy="CommentItem: edit button"]').should('exist')
-        })
+        cy.step('Views show on second howto')
+        cy.visit('/how-to/make-glass-like-beams')
+        cy.get('[data-cy="ViewsCounter"]').should('exist')
       })
     })
 
@@ -226,15 +187,18 @@ describe('[How To]', () => {
   })
 
   describe('[Fail to find a How-to]', () => {
-    const uuid = crypto.randomBytes(16).toString('hex')
-    const howToNotFoundUrl = `/how-to/this-how-to-does-not-exist-${uuid}`
+    const id = uuid()
+    const howToNotFoundUrl = `/how-to/this-how-to-does-not-exist-${id}`
 
     it('[Redirects to search]', () => {
       cy.visit(howToNotFoundUrl)
       cy.location('pathname').should('eq', '/how-to')
       cy.location('search').should(
         'eq',
-        `?search=this+how+to+does+not+exist+${uuid}&source=how-to-not-found`,
+        `?search=this%20how%20to%20does%20not%20exist%20${id.replaceAll(
+          '-',
+          '%20',
+        )}&source=how-to-not-found`,
       )
     })
   })

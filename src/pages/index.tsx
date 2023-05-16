@@ -1,10 +1,10 @@
 import React, { Suspense } from 'react'
 import { Switch, Route, BrowserRouter, Redirect } from 'react-router-dom'
-import GoogleAnalytics from 'src/pages/common/GoogleAnalytics'
+import { Analytics } from 'src/common/Analytics'
 import { NotFoundPage } from './NotFound/NotFound'
-import ScrollToTop from './../components/ScrollToTop/ScrollToTop'
+import ScrollToTop from '../common/ScrollToTop'
 import Header from './common/Header/Header'
-import { SWUpdateNotification } from 'src/pages/common/SWUpdateNotification/SWUpdateNotification'
+import { ServiceWorkerUpdateNotification } from 'src/pages/common/ServiceWorkerUpdateNotification/ServiceWorkerUpdateNotification'
 import Main from 'src/pages/common/Layout/Main'
 import type { IPageMeta } from './PageList'
 import {
@@ -14,13 +14,13 @@ import {
   POLICY_PAGES,
   getAvailablePageList,
 } from './PageList'
-import { Flex, Box, Button } from 'theme-ui'
+import { Flex, Box } from 'theme-ui'
 import DevSiteHeader from 'src/pages/common/DevSiteHeader/DevSiteHeader'
 import { getSupportedModules } from 'src/modules'
 import GlobalSiteFooter from './common/GlobalSiteFooter/GlobalSiteFooter'
-import NotificationBanner from 'src/components/NotificationBanner/NotificationBanner'
+import { AlertIncompleteProfile } from 'src/common/AlertIncompleteProfile'
 import { SeoTagsUpdateComponent } from 'src/utils/seo'
-import { ExternalLink } from 'oa-components'
+import { ExternalLink, Button } from 'oa-components'
 
 export class Routes extends React.Component<
   any,
@@ -48,13 +48,13 @@ export class Routes extends React.Component<
         data-cy="page-container"
       >
         <BrowserRouter>
-          <SWUpdateNotification />
-          <GoogleAnalytics />
+          <ServiceWorkerUpdateNotification />
+          <Analytics />
           {/* on page change scroll to top */}
           <ScrollToTop>
             {/* TODO - add better loading fallback */}
             <DevSiteHeader />
-            <NotificationBanner />
+            <AlertIncompleteProfile />
             <Header />
             <Suspense
               fallback={
@@ -103,15 +103,9 @@ export class Routes extends React.Component<
             display: ['none', 'none', 'block'],
           }}
         >
-          <ExternalLink
-            href="https://discordapp.com/invite/cGZ5hKP"
-            data-cy="feedback"
-          >
-            <Button variant="primary">
-              Join our chat{' '}
-              <span role="img" aria-label="talk-bubble">
-                💬
-              </span>
+          <ExternalLink href="https://discord.gg/gJ7Yyk4" data-cy="feedback">
+            <Button variant="primary" icon="comment">
+              Join our chat
             </Button>
           </ExternalLink>
         </Box>

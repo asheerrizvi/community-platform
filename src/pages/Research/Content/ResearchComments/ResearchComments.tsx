@@ -1,19 +1,21 @@
+import { Button, CommentList, CreateComment } from 'oa-components'
 import { useState } from 'react'
-import ReactGA from 'react-ga4'
-import { Box, Flex } from 'theme-ui'
-import { Button, CreateComment, CommentList } from 'oa-components'
-import type { UserComment } from 'src/models'
+import { MAX_COMMENT_LENGTH } from '../../../../constants'
+import { useCommonStores } from '../../../../'
 import { logger } from 'src/logger'
-import { useResearchStore } from 'src/stores/Research/research.store'
-import type { IResearch } from 'src/models/research.models'
-import { useCommonStores } from 'src/index'
-import styled from '@emotion/styled'
-import { MAX_COMMENT_LENGTH } from 'src/constants'
+import { useResearchStore } from '../../../../stores/Research/research.store'
+import { Box, Flex } from 'theme-ui'
 
+import styled from '@emotion/styled'
+
+import type { UserComment } from 'src/models'
+import type { IResearch } from 'src/models/research.models'
+import { trackEvent } from 'src/common/Analytics'
 interface IProps {
   comments: UserComment[]
   update: IResearch.UpdateDB
   updateIndex: number
+  showComments?: boolean
 }
 
 const BoxMain = styled(Box)`
@@ -23,29 +25,28 @@ const BoxMain = styled(Box)`
   margin-top: 20px;
 `
 
-export const ResearchComments = ({ comments, update, updateIndex }: IProps) => {
+export const getResearchCommentId = (s: string) =>
+  s.replace(/#update-\d+-comment:/, '')
+
+export const ResearchComments = ({
+  comments,
+  update,
+  showComments,
+}: IProps) => {
   const [comment, setComment] = useState('')
   const [, setLoading] = useState(false)
   const researchStore = useResearchStore()
-  const [viewComments, setViewComments] = useState(false)
+  const [viewComments, setViewComments] = useState(!!showComments)
   const { stores } = useCommonStores()
 
-  async function onSubmit(comment: string) {
+  const onSubmit = async (comment: string) => {
     try {
       setLoading(true)
       await researchStore.addComment(comment, update as IResearch.Update)
       setLoading(false)
       setComment('')
-      const currResearchItem = researchStore.activeResearchItem
-      if (currResearchItem) {
-        await stores.userStore.triggerNotification(
-          'new_comment_research',
-          currResearchItem._createdBy,
-          '/research/' + currResearchItem.slug + '#update_' + updateIndex,
-        )
-      }
 
-      ReactGA.event({
+      trackEvent({
         category: 'Comments',
         action: 'Submitted',
         label: researchStore.activeResearchItem?.title,
@@ -64,38 +65,33 @@ export const ResearchComments = ({ comments, update, updateIndex }: IProps) => {
     }
   }
 
-  async function handleEditRequest() {
-    ReactGA.event({
+  const handleEditRequest = async () => {
+    trackEvent({
       category: 'Comments',
       action: 'Edit existing comment',
       label: researchStore.activeResearchItem?.title,
     })
   }
 
-  async function handleDelete(_id: string) {
-    const confirmation = window.confirm(
-      'Are you sure you want to delete this comment?',
-    )
-    if (confirmation) {
-      await researchStore.deleteComment(_id, update as IResearch.Update)
-      ReactGA.event({
+  const handleDelete = async (_id: string) => {
+    await researchStore.deleteComment(_id, update as IResearch.Update)
+    trackEvent({
+      category: 'Comments',
+      action: 'Deleted',
+      label: researchStore.activeResearchItem?.title,
+    })
+    logger.debug(
+      {
         category: 'Comments',
         action: 'Deleted',
         label: researchStore.activeResearchItem?.title,
-      })
-      logger.debug(
-        {
-          category: 'Comments',
-          action: 'Deleted',
-          label: researchStore.activeResearchItem?.title,
-        },
-        'comment deleted',
-      )
-    }
+      },
+      'comment deleted',
+    )
   }
 
-  async function handleEdit(_id: string, comment: string) {
-    ReactGA.event({
+  const handleEdit = async (_id: string, comment: string) => {
+    trackEvent({
       category: 'Comments',
       action: 'Update',
       label: researchStore.activeResearchItem?.title,
@@ -172,6 +168,8 @@ export const ResearchComments = ({ comments, update, updateIndex }: IProps) => {
             handleEdit={handleEdit}
             handleDelete={handleDelete}
             handleEditRequest={handleEditRequest}
+            highlightedCommentId={getResearchCommentId(window.location.hash)}
+            trackEvent={trackEvent}
           />
           <Box sx={{ width: '100%' }}>
             <CreateComment

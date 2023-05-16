@@ -1,10 +1,12 @@
 import { PureComponent } from 'react'
 import { Field } from 'react-final-form'
 import { Heading, Card, Flex, Text } from 'theme-ui'
-import { ImageInputField } from 'src/components/Form/ImageInput.field'
+import { ImageInputField } from 'src/common/Form/ImageInput.field'
 import { Button, FieldInput, FieldTextarea, Modal } from 'oa-components'
 import styled from '@emotion/styled'
-import theme from 'src/themes/styled.theme'
+// TODO: Remove direct usage of Theme
+import { preciousPlasticTheme } from 'oa-themes'
+const theme = preciousPlasticTheme.styles
 import type { IHowtoStep } from 'src/models/howto.models'
 import type { IUploadedFileMeta } from 'src/stores/storage'
 import { required } from 'src/utils/validators'
@@ -82,6 +84,7 @@ class HowtoStep extends PureComponent<IProps, IState> {
                 data-cy="move-step"
                 variant={'secondary'}
                 icon="arrow-full-up"
+                showIconOnly={true}
                 sx={{ mx: '5px' }}
                 onClick={() => this.props.moveStep(index, index - 1)}
               />
@@ -91,12 +94,14 @@ class HowtoStep extends PureComponent<IProps, IState> {
               variant={'secondary'}
               icon="arrow-full-down"
               sx={{ mx: '5px' }}
+              showIconOnly={true}
               onClick={() => this.props.moveStep(index, index + 1)}
             />
             {index >= 1 && (
               <Button
                 data-cy="delete-step"
-                variant={'tertiary'}
+                variant={'outline'}
+                showIconOnly={true}
                 icon="delete"
                 onClick={() => this.toggleDeleteModal()}
               />
@@ -119,7 +124,7 @@ class HowtoStep extends PureComponent<IProps, IState> {
                 <Flex px={1}>
                   <Button
                     data-cy="confirm"
-                    variant={'tertiary'}
+                    variant={'outline'}
                     onClick={() => this.confirmDelete()}
                   >
                     Delete

@@ -6,7 +6,6 @@ import {
   CONTAINER_NAME,
   getFirebasePortMapping,
   IMAGE_NAME,
-  REPOSITORY,
   TAG_NAME,
 } from './common'
 import { PATHS } from './paths'
@@ -102,10 +101,17 @@ async function createNewContainer() {
     await _wait(5000)
     return createNewContainer()
   }
+
+  const allImages = await docker.listImages()
+  const existingImage = allImages.find((c) =>
+    c.RepoTags.includes(`${IMAGE_NAME}`),
+  )
+
   // pull remote image if required
-  if (REPOSITORY) {
+  if (!existingImage) {
     await pullRemoteImage(IMAGE_NAME)
   }
+
   const { ExposedPorts, PortBindings } = rewritePortMapping()
   return new Promise<Dockerode.Container>((resolve, reject) => {
     docker.createContainer(

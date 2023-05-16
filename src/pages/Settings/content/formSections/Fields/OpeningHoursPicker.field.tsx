@@ -1,10 +1,139 @@
 import { Component } from 'react'
-import { WEEK_DAYS, OPENING_HOURS } from 'src/mocks/Selectors'
 import { Field } from 'react-final-form'
 import { Button, Modal } from 'oa-components'
 import { Text, Flex } from 'theme-ui'
-import { SelectField } from 'src/components/Form/Select.field'
+import { SelectField } from 'src/common/Form/Select.field'
 import { required } from 'src/utils/validators'
+
+const WEEK_DAYS = [
+  {
+    value: 'Monday',
+    label: 'Monday',
+  },
+  {
+    value: 'Tuesday',
+    label: 'Tuesday',
+  },
+  {
+    value: 'Wednesday',
+    label: 'Wednesday',
+  },
+  {
+    value: 'Thursday',
+    label: 'Thursday',
+  },
+  {
+    value: 'Friday',
+    label: 'Friday',
+  },
+  {
+    value: 'Saturday',
+    label: 'Saturday',
+  },
+  {
+    value: 'Sunday',
+    label: 'Sunday',
+  },
+]
+
+const OPENING_HOURS = [
+  {
+    value: '01:00 AM',
+    label: '01:00 AM',
+  },
+  {
+    value: '02:00 AM',
+    label: '02:00 AM',
+  },
+  {
+    value: '03:00 AM',
+    label: '03:00 AM',
+  },
+  {
+    value: '04:00 AM',
+    label: '04:00 AM',
+  },
+  {
+    value: '05:00 AM',
+    label: '05:00 AM',
+  },
+  {
+    value: '06:00 AM',
+    label: '06:00 AM',
+  },
+  {
+    value: '07:00 AM',
+    label: '07:00 AM',
+  },
+  {
+    value: '08:00 AM',
+    label: '08:00 AM',
+  },
+  {
+    value: '09:00 AM',
+    label: '09:00 AM',
+  },
+  {
+    value: '10:00 AM',
+    label: '10:00 AM',
+  },
+  {
+    value: '11:00 AM',
+    label: '11:00 AM',
+  },
+  {
+    value: '12:00 AM',
+    label: '12:00 AM',
+  },
+  {
+    value: '01:00 PM',
+    label: '01:00 PM',
+  },
+  {
+    value: '02:00 PM',
+    label: '02:00 PM',
+  },
+  {
+    value: '03:00 PM',
+    label: '03:00 PM',
+  },
+  {
+    value: '04:00 PM',
+    label: '04:00 PM',
+  },
+  {
+    value: '05:00 PM',
+    label: '05:00 PM',
+  },
+  {
+    value: '06:00 PM',
+    label: '06:00 PM',
+  },
+  {
+    value: '07:00 PM',
+    label: '07:00 PM',
+  },
+  {
+    value: '08:00 PM',
+    label: '08:00 PM',
+  },
+  {
+    value: '09:00 PM',
+    label: '09:00 PM',
+  },
+  {
+    value: '10:00 PM',
+    label: '10:00 PM',
+  },
+  {
+    value: '11:00 PM',
+    label: '11:00 PM',
+  },
+  {
+    value: '12:00 PM',
+    label: '12:00 PM',
+  },
+]
 
 interface IProps {
   openingHoursValues?: string
@@ -38,10 +167,14 @@ export class OpeningHoursPicker extends Component<IProps, IState> {
     return (
       <Flex
         key={index}
-        sx={{ alignItems: 'flex-start', flexWrap: ['wrap', 'wrap', 'nowrap'] }}
+        sx={{
+          gap: '8px',
+          alignItems: 'flex-start',
+          flexWrap: ['wrap', 'wrap', 'nowrap'],
+        }}
         my={1}
       >
-        <Flex mb={1}>
+        <Flex mb={1} sx={{ gap: '8px' }}>
           <Field
             data-cy={`opening-time-day-${index}`}
             name={`${openingHoursValues}.day`}
@@ -50,17 +183,16 @@ export class OpeningHoursPicker extends Component<IProps, IState> {
             validate={required}
             validateFields={[]}
             placeholder="Select day"
-            style={{ width: '160px', marginRight: '8px', marginBottom: 0 }}
+            style={{ marginBottom: 0 }}
           />
           <Button
             icon={'delete'}
-            variant={'tertiary'}
-            ml={'10px'}
+            variant={'outline'}
             sx={{ height: '40px', display: ['block', 'block', 'none'] }}
             onClick={() => this.toggleDeleteModal()}
           />
         </Flex>
-        <Flex>
+        <Flex sx={{ gap: '8px' }}>
           <Field
             data-cy={`opening-time-from-${index}`}
             name={`${openingHoursValues}.openFrom`}
@@ -69,7 +201,8 @@ export class OpeningHoursPicker extends Component<IProps, IState> {
             placeholder="from --:-- AM"
             validate={required}
             validateFields={[]}
-            style={{ width: '160px', marginRight: '8px', marginBottom: 0 }}
+            showError={false}
+            style={{ marginBottom: 0 }}
           />
           <Field
             data-cy={`opening-time-to-${index}`}
@@ -79,17 +212,20 @@ export class OpeningHoursPicker extends Component<IProps, IState> {
             placeholder="to --:-- PM"
             validate={required}
             validateFields={[]}
-            style={{ width: '160px', marginBottom: 0 }}
+            showError={false}
+            style={{ marginBottom: 0 }}
           />
         </Flex>
         <Button
           icon={'delete'}
-          variant={'tertiary'}
-          ml={'10px'}
+          variant={'outline'}
           data-cy={`delete-opening-time-${index}-desk`}
           sx={{ height: '40px', display: ['none', 'none', 'block'] }}
+          showIconOnly={true}
           onClick={() => this.toggleDeleteModal()}
-        />
+        >
+          Delete
+        </Button>
         <Modal
           onDidDismiss={() => this.toggleDeleteModal()}
           isOpen={this.state.showDeleteModal}
@@ -108,7 +244,7 @@ export class OpeningHoursPicker extends Component<IProps, IState> {
             <Flex px={1}>
               <Button
                 data-cy={'confirm-delete'}
-                variant={'tertiary'}
+                variant={'outline'}
                 onClick={() => this.confirmDelete()}
               >
                 Delete

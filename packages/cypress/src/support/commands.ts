@@ -1,5 +1,6 @@
 import 'cypress-file-upload'
-import { TestDB, firebase, Auth } from './db/firebase'
+import type { firebase } from './db/firebase'
+import { TestDB, Auth } from './db/firebase'
 import { deleteDB } from 'idb'
 
 export enum UserMenuItem {
@@ -53,6 +54,10 @@ declare global {
        * @param selector Specify the selector of the react-select element
        **/
       selectTag(tagName: string, selector?: string): Chainable<void>
+
+      interceptAddressSearchFetch(addressResponse): Chainable<void>
+
+      interceptAddressReverseFetch(addressResponse): Chainable<void>
     }
   }
 }
@@ -136,12 +141,12 @@ const attachCustomCommands = (Cypress: Cypress.Cypress) => {
               .catch(reject)
           })
         })
-        // after login ensure the auth user matches expected and user menu visable
+        // after login ensure the auth user matches expected and user menu visible
         .its('email')
         .should('eq', email)
       cy.wrap(checkUI ? 'check login ui' : 'skip ui check').then(() => {
         if (checkUI) {
-          cy.get('[data-cy=user-menu]').should('exist')
+          cy.get('[data-cy=user-menu]').should('be.visible')
         }
       })
       cy.log('user', Auth.currentUser)
@@ -150,7 +155,7 @@ const attachCustomCommands = (Cypress: Cypress.Cypress) => {
 
   Cypress.Commands.add('logout', (checkUI = true) => {
     cy.wrap('logging out').then(() => {
-      return new Cypress.Promise((resolve, reject) => {
+      return new Cypress.Promise((resolve) => {
         Auth.signOut().then(() => resolve())
       })
     })
@@ -235,6 +240,18 @@ const attachCustomCommands = (Cypress: Cypress.Cypress) => {
         .click()
     },
   )
+
+  Cypress.Commands.add('interceptAddressSearchFetch', (addressResponse) => {
+    cy.intercept('GET', 'https://nominatim.openstreetmap.org/search*', {
+      body: addressResponse,
+    }).as('fetchAddress')
+  })
+
+  Cypress.Commands.add('interceptAddressReverseFetch', (addressResponse) => {
+    cy.intercept('GET', 'https://nominatim.openstreetmap.org/reverse?*', {
+      body: addressResponse,
+    }).as('fetchAddressReverse')
+  })
 }
 
 attachCustomCommands(Cypress)

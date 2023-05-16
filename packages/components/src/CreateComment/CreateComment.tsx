@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Text, Textarea } from 'theme-ui'
 import { Link } from 'react-router-dom'
 import type { ThemeUIStyleObject } from 'theme-ui'
-import { MemberBadge } from '../index'
+import { MemberBadge } from '../MemberBadge/MemberBadge'
 
 export interface Props {
   maxLength: number
@@ -23,7 +23,7 @@ export const CreateComment = (props: Props) => {
 
   return (
     <>
-      <Flex>
+      <Flex sx={{ marginBottom: 5 }} data-target="create-comment-container">
         <Box sx={{ lineHeight: 0, marginTop: 2 }}>
           <MemberBadge profileType={userProfileType} useLowDetailVersion />
         </Box>
@@ -69,9 +69,8 @@ export const CreateComment = (props: Props) => {
                   fontSize: 2,
                   position: 'absolute',
                   right: 0,
-                  bottom: 0,
+                  bottom: -5,
                   pointerEvents: 'none',
-                  background: 'white',
                   padding: 1,
                 }}
               >
@@ -99,7 +98,7 @@ export const CreateComment = (props: Props) => {
       </Flex>
       <Button
         data-cy="comment-submit"
-        disabled={!Boolean(comment.trim()) || !isLoggedIn}
+        disabled={!comment.trim() || !isLoggedIn}
         variant="primary"
         onClick={() => onSubmit(comment)}
         mt={3}
@@ -107,7 +106,7 @@ export const CreateComment = (props: Props) => {
           float: 'right',
         }}
       >
-        Comment
+        Leave a comment
       </Button>
     </>
   )

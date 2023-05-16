@@ -1,17 +1,14 @@
 import { format } from 'date-fns'
-import * as React from 'react'
-import Linkify from 'react-linkify'
 import ReactPlayer from 'react-player'
 import { Box, Card, Text, Flex, Heading } from 'theme-ui'
-import { Button } from 'oa-components'
-import { ImageGallery } from 'src/components/ImageGallery/ImageGallery'
+import { Button, ImageGallery, LinkifyText, Username } from 'oa-components'
 import type { IResearch } from 'src/models/research.models'
 import type { IUploadedFileMeta } from 'src/stores/storage'
 import { ResearchComments } from './ResearchComments/ResearchComments'
 import styled from '@emotion/styled'
 import type { IComment } from 'src/models'
-import { useTheme } from '@emotion/react'
 import { Link } from 'react-router-dom'
+import { useContributorsData } from 'src/common/hooks/contributorsData'
 
 interface IProps {
   update: IResearch.UpdateDB
@@ -19,23 +16,36 @@ interface IProps {
   isEditable: boolean
   slug: string
   comments: IComment[]
+  showComments: boolean
 }
 
 const FlexStepNumber = styled(Flex)`
   height: fit-content;
 `
 
-const ResearchUpdate: React.FC<IProps> = ({
+const ResearchUpdate = ({
   update,
   updateIndex,
   isEditable,
   slug,
   comments,
-}) => {
-  const theme = useTheme()
+  showComments,
+}: IProps) => {
+  const formattedCreateDatestamp = format(
+    new Date(update._created),
+    'DD-MM-YYYY',
+  )
+  const formattedModifiedDatestamp = format(
+    new Date(update._modified),
+    'DD-MM-YYYY',
+  )
+
+  const contributors = useContributorsData(update.collaborators || [])
+
   return (
     <>
       <Flex
+        data-testid={`ResearchUpdate: ${updateIndex}`}
         data-cy={`update_${updateIndex}`}
         id={`update_${updateIndex}`}
         mx={[0, 0, -2]}
@@ -63,9 +73,18 @@ const ResearchUpdate: React.FC<IProps> = ({
               <Flex
                 sx={{ width: '100%', flexDirection: ['column', 'row', 'row'] }}
               >
-                <Heading sx={{ width: ['100%', '75%', '75%'] }} mb={[2, 0, 0]}>
-                  {update.title}
-                </Heading>
+                <Box sx={{ width: ['100%', '75%', '75%'] }}>
+                  {contributors ? (
+                    <Box sx={{ mb: 2 }}>
+                      {contributors.map((collab, idx) => (
+                        <Username key={idx} user={collab} isVerified={false} />
+                      ))}
+                    </Box>
+                  ) : null}
+
+                  <Heading sx={{ mb: 2 }}>{update.title}</Heading>
+                </Box>
+
                 <Flex
                   sx={{
                     flexDirection: ['row', 'column', 'column'],
@@ -76,23 +95,23 @@ const ResearchUpdate: React.FC<IProps> = ({
                 >
                   <Flex sx={{ flexDirection: ['column'] }}>
                     <Text
+                      variant="auxiliary"
                       sx={{
                         textAlign: ['left', 'right', 'right'],
-                        ...theme.typography.auxiliary,
                       }}
                     >
-                      {'created ' +
-                        format(new Date(update._created), 'DD-MM-YYYY')}
+                      {'created ' + formattedCreateDatestamp}
                     </Text>
-                    {update._created !== update._modified && (
+
+                    {formattedCreateDatestamp !==
+                      formattedModifiedDatestamp && (
                       <Text
+                        variant="auxiliary"
                         sx={{
                           textAlign: ['left', 'right', 'right'],
-                          ...theme.typography.auxiliary,
                         }}
                       >
-                        {'edited ' +
-                          format(new Date(update._modified), 'DD-MM-YYYY')}
+                        {'edited ' + formattedModifiedDatestamp}
                       </Text>
                     )}
                   </Flex>
@@ -116,12 +135,11 @@ const ResearchUpdate: React.FC<IProps> = ({
               <Box>
                 <Text
                   mt={3}
+                  variant="paragraph"
                   color={'grey'}
-                  sx={{ whiteSpace: 'pre-line', ...theme.typography.paragraph }}
+                  sx={{ whiteSpace: 'pre-line' }}
                 >
-                  <Linkify properties={{ target: '_blank' }}>
-                    {update.description}
-                  </Linkify>
+                  <LinkifyText>{update.description}</LinkifyText>
                 </Text>
               </Box>
             </Flex>
@@ -141,6 +159,7 @@ const ResearchUpdate: React.FC<IProps> = ({
               update={update}
               comments={comments as any}
               updateIndex={updateIndex}
+              showComments={showComments}
             />
           </Card>
         </Flex>

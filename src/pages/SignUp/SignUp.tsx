@@ -1,24 +1,16 @@
 import * as React from 'react'
 import { FRIENDLY_MESSAGES } from 'oa-shared'
-import { Card, Flex, Heading, Text } from 'theme-ui'
-import styled from '@emotion/styled'
-import theme from 'src/themes/styled.theme'
+import { Card, Flex, Heading, Text, Label } from 'theme-ui'
 import { Button, ExternalLink, FieldInput } from 'oa-components'
 import { Form, Field } from 'react-final-form'
 import { inject, observer } from 'mobx-react'
 import type { UserStore } from 'src/stores/User/user.store'
 import type { RouteComponentProps } from 'react-router'
-import { withRouter } from 'react-router'
+import { withRouter, Redirect } from 'react-router'
 import { string, object, ref, bool } from 'yup'
 import { required } from 'src/utils/validators'
 import { formatLowerNoSpecial } from 'src/utils/helpers'
 import { Link } from 'react-router-dom'
-
-const Label = styled.label`
-  font-size: ${theme.fontSizes[2] + 'px'};
-  margin-bottom: ${theme.space[2] + 'px'};
-  display: block;
-`
 
 interface IFormValues {
   email: string
@@ -82,6 +74,10 @@ class SignUpPage extends React.Component<IProps, IState> {
   }
 
   public render() {
+    if (this.props.userStore!.user) {
+      return <Redirect to={'/'} />
+    }
+
     return (
       <Form
         onSubmit={(v) => this.onSignupSubmit(v as IFormValues)}
@@ -221,22 +217,28 @@ class SignUpPage extends React.Component<IProps, IState> {
                         mt={2}
                         sx={{ width: ['100%', '100%', `${(2 / 3) * 100}%`] }}
                       >
-                        <Field
-                          data-cy="consent"
-                          name="consent"
-                          type="checkbox"
-                          component="input"
-                          validate={required}
-                        />
-                        <Label htmlFor="consent">
-                          I agree to the{' '}
-                          <ExternalLink href="/terms">
-                            Terms of Service
-                          </ExternalLink>
-                          <span> and </span>
-                          <ExternalLink href="/privacy">
-                            Privacy Policy
-                          </ExternalLink>
+                        <Label>
+                          <Field
+                            data-cy="consent"
+                            name="consent"
+                            type="checkbox"
+                            component="input"
+                            validate={required}
+                          />
+                          <Text
+                            sx={{
+                              fontSize: 2,
+                            }}
+                          >
+                            I agree to the{' '}
+                            <ExternalLink href="/terms">
+                              Terms of Service
+                            </ExternalLink>
+                            <span> and </span>
+                            <ExternalLink href="/privacy">
+                              Privacy Policy
+                            </ExternalLink>
+                          </Text>
                         </Label>
                       </Flex>
                       <Text color={'red'} data-cy="error-msg">
@@ -251,8 +253,9 @@ class SignUpPage extends React.Component<IProps, IState> {
 
                       <Flex>
                         <Button
+                          large
                           data-cy="submit"
-                          sx={{ width: '100%' }}
+                          sx={{ width: '100%', justifyContent: 'center' }}
                           variant={'primary'}
                           disabled={disabled}
                           type="submit"

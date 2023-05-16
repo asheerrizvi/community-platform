@@ -2,13 +2,14 @@ import * as React from 'react'
 import { observer, inject } from 'mobx-react'
 import { Heading, Text, Box, Flex } from 'theme-ui'
 import { Field } from 'react-final-form'
-import { Button, FieldTextarea } from 'oa-components'
+import { Button, FieldTextarea, MapWithDraggablePin } from 'oa-components'
 import { FlexSectionContainer } from './elements'
 import { MAP_GROUPINGS } from 'src/stores/Maps/maps.groupings'
-import theme from 'src/themes/styled.theme'
+// TODO: Remove direct usage of Theme
+import { preciousPlasticTheme } from 'oa-themes'
+const theme = preciousPlasticTheme.styles
 import { required } from 'src/utils/validators'
 import type { ILocation } from 'src/models/common.models'
-import MapWithDraggablePin from 'src/components/MapWithDraggablePin/MapWithDraggablePin'
 import type { UserStore } from 'src/stores/User/user.store'
 import { randomIntFromInterval } from 'src/utils/helpers'
 

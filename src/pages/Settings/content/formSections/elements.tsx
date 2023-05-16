@@ -1,5 +1,7 @@
 import styled from '@emotion/styled'
-import theme from 'src/themes/styled.theme'
+// TODO: Remove direct usage of Theme
+import { preciousPlasticTheme } from 'oa-themes'
+const theme = preciousPlasticTheme.styles
 import { Card, Flex } from 'theme-ui'
 import { Field } from 'react-final-form'
 
@@ -36,7 +38,7 @@ export const HiddenInput = styled(Field)`
 `
 
 export const FlexSectionContainer = (props) => (
-  <Card mt={4}>
+  <Card mt={4} style={{ overflow: 'visible' }}>
     <Flex p={4} sx={{ flexWrap: 'nowrap', flexDirection: 'column' }}>
       {props.children}
     </Flex>

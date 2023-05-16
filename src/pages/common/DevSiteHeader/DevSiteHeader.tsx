@@ -1,7 +1,7 @@
 import { SITE, VERSION, DEV_SITE_ROLE } from 'src/config/config'
 import type { UserRole } from 'src/models'
 import { Flex, Box, Text } from 'theme-ui'
-import Select from 'react-select'
+import { Select } from 'oa-components'
 import { observer } from 'mobx-react-lite'
 import { useCommonStores } from 'src/index'
 
@@ -88,12 +88,9 @@ const DevSiteHeader = observer(() => {
   )
 })
 
-function showDevSiteHeader() {
-  return (
-    devSites.some((s) => s.value === SITE) ||
-    window.location?.hostname === 'localhost'
-  )
-}
+const showDevSiteHeader = () =>
+  devSites.some((s) => s.value === SITE) ||
+  window.location?.hostname === 'localhost'
 
 const availableThemes = [
   { value: 'precious-plastic', label: 'Precious Plastic' },
@@ -134,7 +131,7 @@ const setSiteRole = async (role: string) => {
 
 /** Delete local,session and indexedDB storage */
 const clearCache = (reload = true) => {
-  return new Promise(async (resolve) => {
+  return new Promise((resolve) => {
     localStorage.clear()
     sessionStorage.clear()
     const req = indexedDB.deleteDatabase('OneArmyCache')

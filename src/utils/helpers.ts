@@ -29,7 +29,7 @@ export const replaceDashesWithSpaces = (str: string) => {
 export const arrayToJson = (arr: any[], keyField: string) => {
   const json = {}
   arr.forEach((el) => {
-    if (el.hasOwnProperty(keyField)) {
+    if (Object.prototype.hasOwnProperty.call(el, keyField)) {
       const key = el[keyField]
       json[key] = el
     }
@@ -123,7 +123,10 @@ export const needsModeration = (doc: IModerable, user?: IUser) => {
   return doc.moderation !== 'accepted'
 }
 
-export const isAllowToEditContent = (doc: IEditableDoc, user?: IUser) => {
+export const isAllowToEditContent = (
+  doc: IEditableDoc & { collaborators?: string[] },
+  user?: IUser,
+) => {
   if (!user) {
     return false
   }
@@ -132,6 +135,11 @@ export const isAllowToEditContent = (doc: IEditableDoc, user?: IUser) => {
   }
   const roles =
     user.userRoles && Array.isArray(user.userRoles) ? user.userRoles : []
+
+  if (doc.collaborators?.includes(user.userName)) {
+    return true
+  }
+
   if (
     roles.includes('admin') ||
     roles.includes('super-admin') ||
@@ -159,7 +167,5 @@ interface IEditableDoc extends DBDoc {
 // Convert theme em string to px number
 export const emStringToPx = (width) => Number(width.replace('em', '')) * 16
 
-export function randomIntFromInterval(min, max) {
-  // min and max included
-  return Math.floor(Math.random() * (max - min + 1) + min)
-}
+export const randomIntFromInterval = (min, max) =>
+  Math.floor(Math.random() * (max - min + 1) + min)

@@ -4,6 +4,7 @@ import './sprites.css'
 import type { IMapPin } from 'src/models/maps.models'
 import clusterIcon from 'src/assets/icons/map-cluster.svg'
 import Workspace from 'src/pages/User/workspace/Workspace'
+import type { PlatformTheme } from 'oa-themes'
 
 import AwaitingModerationHighlight from 'src/assets/icons/map-unpproved-pin.svg'
 import { logger } from 'workbox-core/_private'
@@ -33,10 +34,10 @@ export const createClusterIcon = () => {
   }
 }
 
-export const createMarkerIcon = (pin: IMapPin) => {
+export const createMarkerIcon = (pin: IMapPin, currentTheme: PlatformTheme) => {
   const icon =
     pin.moderation === 'accepted'
-      ? Workspace.findWorkspaceBadge(pin.type, true, pin.verified)
+      ? Workspace.findWorkspaceBadge(pin.type, true, pin.verified, currentTheme)
       : AwaitingModerationHighlight
   if (!pin.type) {
     logger.debug('NO TYPE', pin)
@@ -53,7 +54,7 @@ export const createMarkerIcon = (pin: IMapPin) => {
  * to scale cluster depending on value and ensure fits in icon
  * @param cluster - MarkerCluster passed from creation function
  */
-function getClusterSizes(cluster: MarkerCluster) {
+const getClusterSizes = (cluster: MarkerCluster) => {
   const count = cluster.getChildCount()
   const order = Math.round(count).toString().length
   switch (order) {

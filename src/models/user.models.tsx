@@ -5,7 +5,7 @@ import type {
   DBDoc,
   IModerationStatus,
 } from './common.models'
-import type { UserRole } from 'oa-shared/models'
+import type { UserRole, EmailNotificationFrequency } from 'oa-shared'
 export type { UserRole }
 import type { IUploadedFileMeta } from '../stores/storage'
 import type { IConvertedFileMeta } from '../types'
@@ -13,6 +13,7 @@ import type { IConvertedFileMeta } from '../types'
 export interface IUserState {
   user?: IUser
 }
+
 // IUser retains most of the fields from legacy users (omitting passwords),
 // and has a few additional fields. Note 'email' is excluded
 // _uid is unique/fixed identifier
@@ -45,14 +46,17 @@ export interface IUser {
   votedUsefulHowtos?: { [howtoId: string]: boolean }
   /** keep a map of all Research ids that a user has voted as useful */
   votedUsefulResearch?: { [researchId: string]: boolean }
+  notification_settings?: INotificationSettings
   notifications?: INotification[]
 }
 
-interface IUserBadges {
+export interface IUserBadges {
   verified: boolean
+  supporter?: boolean
 }
 
 interface IExternalLink {
+  key: string
   url: string
   label:
     | 'email'
@@ -86,10 +90,27 @@ export interface INotification {
   relevantUrl?: string
   type: NotificationType
   read: boolean
+  notified: boolean
+  // email contains the id of the doc in the emails collection if the notification was included in
+  // an email or 'failed' if an email with this notification was attempted and encountered an error
+  email?: string
 }
 
-export type NotificationType =
-  | 'new_comment'
-  | 'howto_useful'
-  | 'new_comment_research'
-  | 'research_useful'
+export const NotificationTypes = [
+  'new_comment',
+  'howto_useful',
+  'howto_mention',
+  'new_comment_research',
+  'research_useful',
+  'research_mention',
+  'research_update',
+] as const
+
+export type NotificationType = typeof NotificationTypes[number]
+
+export type INotificationSettings = {
+  enabled?: {
+    [T in NotificationType]: boolean
+  }
+  emailFrequency: EmailNotificationFrequency
+}

@@ -1,9 +1,10 @@
-import { firebaseAdmin } from './admin'
+import { firebaseApp } from './admin'
 
 import { DBDoc, IDBEndpoint, DB_ENDPOINTS } from '../models'
+import { getFirestore } from 'firebase-admin/firestore'
 
 // TODO - ideally should remove default export to force using functions which have mapping
-export const db = firebaseAdmin.firestore()
+export const db = getFirestore(firebaseApp)
 
 /************************************************************
  * Additional exports to support common naming conventions
@@ -58,4 +59,13 @@ export const setDoc = async (
 ) => {
   const mapping = DB_ENDPOINTS[endpoint] || endpoint
   return db.collection(mapping).doc(docId).set(data)
+}
+
+export const updateDoc = async (
+  endpoint: IDBEndpoint,
+  docId: string,
+  data: any,
+) => {
+  const mapping = DB_ENDPOINTS[endpoint] || endpoint
+  return db.collection(mapping).doc(docId).update(data)
 }

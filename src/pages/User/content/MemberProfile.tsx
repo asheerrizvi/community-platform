@@ -1,36 +1,17 @@
 import 'src/assets/css/slick.min.css'
-import type { IUserPP } from 'src/models/user_pp.models'
+import type { IUserPP } from 'src/models/userPreciousPlastic.models'
 import type { IUploadedFileMeta } from 'src/stores/storage'
-
-import { Box, Image, Text, Flex, Heading, Card } from 'theme-ui'
+import { Box, Image, Flex, Heading, Card, Paragraph } from 'theme-ui'
 import DefaultMemberImage from 'src/assets/images/default_member.svg'
-import { FlagIcon, MemberBadge } from 'oa-components'
-import theme from 'src/themes/styled.theme'
-import styled from '@emotion/styled'
-import { UserStats } from './UserStats'
+import { MemberBadge, UserStatistics, Username } from 'oa-components'
 import UserContactAndLinks from './UserContactAndLinks'
 import { UserAdmin } from './UserAdmin'
+import { isUserVerified } from 'src/common/isUserVerified'
+import { useUserUsefulCount } from 'src/common/hooks/userUsefulCount'
 
 interface IProps {
   user: IUserPP
 }
-
-const MemberPicture = styled('figure')`
-  display: block;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  max-width: none;
-  overflow: hidden;
-  margin: 0 auto;
-
-  img {
-    outline: 100px solid red;
-    object-fit: cover;
-    width: 100%;
-    height: 100%;
-  }
-`
 
 export const MemberProfile = ({ user }: IProps) => {
   const userLinks = user?.links.filter(
@@ -38,7 +19,12 @@ export const MemberProfile = ({ user }: IProps) => {
   )
 
   const userCountryCode =
-    user.location?.countryCode || user.country?.toLowerCase() || null
+    user.location?.countryCode || user.country?.toLowerCase() || undefined
+
+  const memberPictureSource =
+    user.coverImages && user.coverImages[0]
+      ? (user.coverImages[0] as IUploadedFileMeta).downloadUrl
+      : DefaultMemberImage
 
   return (
     <Card
@@ -63,24 +49,51 @@ export const MemberProfile = ({ user }: IProps) => {
           marginLeft: 50 * -0.5,
           marginTop: 50 * -0.5,
         }}
+        useLowDetailVersion
       />
       <Flex
         px={4}
         py={4}
         sx={{ borderRadius: 1, flexDirection: ['column', 'row'] }}
       >
-        <Box mr={3} style={{ flexGrow: 1, minWidth: 'initial' }}>
-          <MemberPicture>
+        <Box sx={{ flexGrow: 1, minWidth: 'initial', mr: 3 }}>
+          <Box
+            sx={{
+              display: 'block',
+              width: '120px',
+              height: '120px',
+              borderRadius: '50%',
+              maxWidth: 'none',
+              overflow: 'hidden',
+              margin: '0 auto',
+              mb: 3,
+            }}
+          >
             <Image
               loading="lazy"
-              src={
-                user.coverImages[0]
-                  ? (user.coverImages[0] as IUploadedFileMeta).downloadUrl
-                  : DefaultMemberImage
-              }
+              src={memberPictureSource}
+              sx={{
+                objectFit: 'cover',
+                width: '100%',
+                height: '100%',
+              }}
             />
-          </MemberPicture>
-          <UserStats user={user} />
+          </Box>
+          <UserStatistics
+            userName={user.userName}
+            country={user.location?.country}
+            isVerified={isUserVerified(user.userName)}
+            isSupporter={!!user.badges?.supporter}
+            howtoCount={
+              user.stats ? Object.keys(user.stats!.userCreatedHowtos).length : 0
+            }
+            eventCount={
+              user.stats ? Object.keys(user.stats!.userCreatedEvents).length : 0
+            }
+            // ** TODO: Beta-tester Authentication needs to be removed from useUserUsefulCount
+            // ** once aggregations are fixed
+            usefulCount={useUserUsefulCount(user) ?? 0}
+          />
         </Box>
         <Flex
           mt={[0, 3]}
@@ -93,24 +106,13 @@ export const MemberProfile = ({ user }: IProps) => {
               pt: ['40px', '40px', '0'],
             }}
           >
-            {userCountryCode && (
-              <FlagIcon
-                mr={2}
-                code={userCountryCode}
-                style={{ display: 'inline-block' }}
-              />
-            )}
-            <Text
-              my={2}
-              sx={{
-                color: `${theme.colors.lightgrey} !important`,
-                wordBreak: 'break-word',
-                fontSize: 3,
+            <Username
+              user={{
+                userName: user.userName,
+                countryCode: userCountryCode,
               }}
-              data-cy="userName"
-            >
-              {user.userName}
-            </Text>
+              isVerified={isUserVerified(user.userName)}
+            />
           </Flex>
           <Box sx={{ flexDirection: 'column' }} mb={3}>
             <Heading
@@ -121,20 +123,7 @@ export const MemberProfile = ({ user }: IProps) => {
               {user.displayName}
             </Heading>
           </Box>
-          {user.about && (
-            <Text
-              mt="0"
-              mb="20px"
-              color={theme.colors.grey}
-              sx={{
-                ...theme.typography.paragraph,
-                whiteSpace: 'pre-line',
-                width: ['80%', '100%'],
-              }}
-            >
-              {user.about}
-            </Text>
-          )}
+          {user.about && <Paragraph>{user.about}</Paragraph>}
           <UserContactAndLinks links={userLinks} />
           <Box mt={3}>
             <UserAdmin user={user} />

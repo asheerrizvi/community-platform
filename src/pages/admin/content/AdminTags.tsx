@@ -2,12 +2,13 @@ import * as React from 'react'
 import { inject, observer } from 'mobx-react'
 import type { TagsStore } from 'src/stores/Tags/tags.store'
 import { Button, Modal } from 'oa-components'
-import { Heading, Box, Text, Input, Flex } from 'theme-ui'
+import { Heading, Box, Input, Select, Flex, Label, Text } from 'theme-ui'
 import type { ITag, TagCategory } from 'src/models/tags.model'
 // Import React Table
 import ReactTable from 'react-table'
 import 'react-table/react-table.css'
-import Select from 'react-select'
+import type { Column } from 'react-table'
+import { Form, Field } from 'react-final-form'
 
 // we include props from react-final-form fields so it can be used as a custom field component
 interface IProps {
@@ -20,17 +21,82 @@ interface IState {
   showEditor?: boolean
 }
 
+type TagFormErrors = {
+  label?: string
+  categories?: string
+}
+
+const validate = (values) => {
+  const errors: TagFormErrors = {}
+  if (!values.label) {
+    errors.label = 'Please provide non empty label'
+  }
+  if (!values.categories || values.categories.length === 0) {
+    errors.categories = 'Please provide at least one category'
+  }
+  return errors
+}
+
+const TagForm = ({ onSubmit, tagForm, updating, hideModal }) => {
+  return (
+    <Form
+      onSubmit={onSubmit}
+      validate={validate}
+      initialValues={{
+        _id: tagForm._id,
+        label: tagForm.label,
+        categories: tagForm.categories ?? [],
+      }}
+      render={({ handleSubmit, pristine }) => (
+        <Box mb={3} bg="white" p={2} as="form" onSubmit={handleSubmit}>
+          {tagForm._id && <Label>_id: {tagForm._id}</Label>}
+          <Field name="label">
+            {({ input, meta }) => (
+              <Box>
+                <Label htmlFor="label">Label name:</Label>
+                <Input {...input} type="text" placeholder="Label" id="label" />
+                {meta.error && meta.touched && (
+                  <Text sx={{ color: 'red' }}>{meta.error}</Text>
+                )}
+              </Box>
+            )}
+          </Field>
+          <Field name="categories" type="select">
+            {({ input, meta }) => (
+              <Box>
+                <Label htmlFor="categories">Label name:</Label>
+                <Select multiple id="categories" {...input} autoFocus>
+                  {TAG_CATEGORIES.map((cur) => (
+                    <option key={cur.value} label={cur.label}>
+                      {cur.value}
+                    </option>
+                  ))}
+                </Select>
+                {meta.error && meta.touched && (
+                  <Text sx={{ color: 'red' }}>{meta.error}</Text>
+                )}
+              </Box>
+            )}
+          </Field>
+          <Flex mt={3}>
+            <Button mr={2} onClick={hideModal} variant={'secondary'}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit} disabled={pristine || updating}>
+              Save
+            </Button>
+          </Flex>
+        </Box>
+      )}
+    />
+  )
+}
 @inject('tagsStore')
 @observer
 export class AdminTags extends React.Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props)
-    this.state = { tagForm: {} }
-  }
-
-  saveEditor = async () => {
+  saveEditor = async (values) => {
     this.setState({ updating: true })
-    await this.props.tagsStore!.saveTag(this.state.tagForm)
+    await this.props.tagsStore!.saveTag(values)
     this.setState({ updating: false, showEditor: false })
   }
   showEditor = (tag: Partial<ITag>) => {
@@ -39,26 +105,14 @@ export class AdminTags extends React.Component<IProps, IState> {
       tagForm: { ...tag },
     })
   }
-
-  handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const patch = { [e.target.name]: e.target.value }
-    this.setState({
-      tagForm: { ...this.state.tagForm, ...patch },
-    })
-  }
-
-  onSelectedTagsChanged(values: ITagCategorySelect[]) {
-    this.setState({
-      tagForm: {
-        ...this.state.tagForm,
-        categories: values.map((v) => v.value),
-      },
-    })
+  constructor(props: IProps) {
+    super(props)
+    this.state = { tagForm: {} }
   }
 
   public render() {
     const { allTags } = this.props.tagsStore!
-    const { tagForm, showEditor, updating, msg } = this.state
+    const { tagForm, showEditor, updating } = this.state
 
     return (
       <Box mt={4}>
@@ -87,40 +141,12 @@ export class AdminTags extends React.Component<IProps, IState> {
         </Box>
 
         <Modal isOpen={!!showEditor}>
-          <Box mb={3} bg={'white'} p={2}>
-            {tagForm._id && <Text>_id: {tagForm._id}</Text>}
-            <Input
-              type="text"
-              name="label"
-              placeholder="Label"
-              value={tagForm.label}
-              onChange={this.handleFormChange}
-            />
-            <Select
-              isMulti
-              options={TAG_CATEGORIES}
-              value={this._getSelected()}
-              onChange={(values) => this.onSelectedTagsChanged(values as any)}
-            />
-            {msg && <Text color="red">{msg}</Text>}
-            <Flex mt={3}>
-              <Button
-                mr={2}
-                onClick={() => this.setState({ showEditor: false })}
-                variant={'secondary'}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={this.saveEditor}
-                disabled={
-                  !tagForm.label || tagForm.categories!.length === 0 || updating
-                }
-              >
-                Save
-              </Button>
-            </Flex>
-          </Box>
+          <TagForm
+            tagForm={tagForm}
+            updating={updating}
+            onSubmit={(values) => this.saveEditor(values)}
+            hideModal={() => this.setState({ showEditor: false })}
+          />
         </Modal>
       </Box>
     )
@@ -134,7 +160,7 @@ export class AdminTags extends React.Component<IProps, IState> {
   }
 }
 
-const TAG_TABLE_COLUMNS: { [key: string]: keyof ITag }[] = [
+const TAG_TABLE_COLUMNS: Array<Column<ITag>> = [
   {
     Header: '_id',
     accessor: '_id',
@@ -145,7 +171,8 @@ const TAG_TABLE_COLUMNS: { [key: string]: keyof ITag }[] = [
   },
   {
     Header: 'categories',
-    accessor: 'categories',
+    id: 'categories',
+    accessor: (tag: ITag) => tag.categories.join(', '),
   },
 ]
 // TODO - currently all hard-coded, would be good to allow custom categories and organisation

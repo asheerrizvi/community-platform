@@ -1,6 +1,7 @@
 export const howtos = {
   '0EwdD1IMrwXcOncqVwOl': {
     slug: 'set-up-devsite-to-help-coding',
+    previousSlugs: ['set-up-devsite-to-help-coding'],
     _deleted: false,
     time: '< 1 week',
     description:
@@ -139,6 +140,9 @@ export const howtos = {
     id: 'DBgbCKle7h4CcNxeUP2V',
     _createdBy: 'howto_editor',
     tags: {},
+    category: {
+      label: 'product',
+    },
     title: 'Set up devsite to help coding!',
     _modified: '2019-09-16T17:54:19.978Z',
     _created: '2019-07-08T07:24:24.456Z',
@@ -1023,11 +1027,15 @@ export const howtos = {
     tags: {
       '36hWyk3OckrLSH1ehdIE': true,
     },
+    category: {
+      label: 'product',
+    },
     id: 'oIVF73weEIlVJQYfolcg',
     title: 'Make a raincoat with plastic bags',
     _modified: '2019-09-27T13:52:31.679Z',
     _created: '2019-06-26T14:58:44.067Z',
     slug: 'make-a-raincoat-with-plastic-bags',
+    previousSlugs: ['make-a-raincoat-with-plastic-bags'],
     _deleted: false,
     time: '1-2 weeks',
     description:
@@ -1493,11 +1501,15 @@ export const howtos = {
       xEfoXujd49MgXTnMg7wj: true,
       Wk6RnHHFfKSiI71BlM8r: true,
     },
+    category: {
+      label: 'product',
+    },
     id: 'DUjTZCQJ6OmSMkEYdZ6f',
     title: 'Make a handplane (simple mould)',
     _modified: '2019-10-04T14:02:46.083Z',
     _created: '2019-05-22T16:27:27.010Z',
     slug: 'make-a-handplane-simple-mould',
+    previousSlugs: ['make-a-handplane-simple-mould'],
   },
   OgxS9mtt3ZugcTzEPEXt: {
     id: 'fUBiAC99ciXpvPcfJ0Fk',
@@ -1506,10 +1518,14 @@ export const howtos = {
       DJN99ErXz8FHy035YdMO: true,
       Cdg3VhG5Yv9BjBEDMcH8: true,
     },
+    category: {
+      label: 'injection',
+    },
     title: 'Create an extruded lamp',
     _modified: '2019-09-27T10:28:06.541Z',
     _created: '2019-06-21T10:42:50.592Z',
     slug: 'create-an-extruded-lamp',
+    previousSlugs: ['create-an-extruded-lamp'],
     _deleted: false,
     time: '< 1 week',
     description:
@@ -1970,6 +1986,7 @@ export const howtos = {
     _modified: '2019-09-18T16:27:34.697Z',
     _created: '2019-06-25T16:58:35.426Z',
     slug: 'create-bottle-top-earrings',
+    previousSlugs: ['create-bottle-top-earrings'],
     _deleted: false,
     time: '< 1 week',
     description:
@@ -2212,6 +2229,9 @@ export const howtos = {
     tags: {
       '36hWyk3OckrLSH1ehdIE': true,
       Wk6RnHHFfKSiI71BlM8r: true,
+    },
+    category: {
+      label: 'injection',
     },
   },
   cmMzzlQP00fCckYIeL2e: {
@@ -2486,6 +2506,7 @@ export const howtos = {
     _modified: '2019-09-18T21:53:33.211Z',
     _created: '2019-09-18T14:49:54.311Z',
     slug: 'make-glass-like-beams',
+    previousSlugs: ['make-glass-like-beams'],
     _deleted: false,
     time: '< 1 week',
   },
@@ -2778,6 +2799,7 @@ export const howtos = {
     _modified: '2019-09-30T18:27:57.570Z',
     _created: '2019-10-01T20:49:43.452Z',
     slug: 'make-an-interlocking-brick',
+    previousSlugs: ['make-an-interlocking-brick'],
     _deleted: false,
     time: '3-4 weeks',
     description:
@@ -2855,6 +2877,7 @@ export const howtos = {
     files: [],
     moderation: 'accepted',
     slug: 'testing-testing',
+    previousSlugs: ['testing-testing'],
     steps: [
       {
         _animationKey: 'unique1',

@@ -1,12 +1,13 @@
 import { Component } from 'react'
 import { getAvailablePageList } from 'src/pages/PageList'
-import theme from 'src/themes/styled.theme'
+// TODO: Remove direct usage of Theme
+import { preciousPlasticTheme } from 'oa-themes'
+const theme = preciousPlasticTheme.styles
 import styled from '@emotion/styled'
 import { Box } from 'theme-ui'
 import Profile from 'src/pages/common/Header/Menu/Profile/Profile'
 import MenuMobileLink from 'src/pages/common/Header/Menu/MenuMobile/MenuMobileLink'
-import MenuMobileExternalLink from './MenuMobileExternalLink'
-import { AuthWrapper } from 'src/components/Auth/AuthWrapper'
+import { AuthWrapper } from 'src/common/AuthWrapper'
 import { getSupportedModules } from 'src/modules'
 import { inject } from 'mobx-react'
 import type { ThemeStore } from 'src/stores/Theme/theme.store'
@@ -33,15 +34,10 @@ const PanelMenu = styled(Box)`
   text-align: center;
   overflow: visible;
   min-width: 200px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 `
 export const PanelItem = styled(Box as any)`
   padding: ${theme.space[3]}px 0px;
-`
-
-export const MenuMobileLinkContainer = styled(Box as any)`
-  border-top: 1px solid ${theme.colors.lightgrey};
-  border-bottom: 1px solid ${theme.colors.lightgrey};
-  margin-top: 5px;
 `
 
 @inject('themeStore')
@@ -74,19 +70,6 @@ export class MenuMobilePanel extends Component {
               )
             })}
             <Profile isMobile={true} />
-            <MenuMobileLinkContainer>
-              {this.injected()
-                .themeStore.getExternalNavigationItems()
-                .map((navigationItem, idx) => {
-                  return (
-                    <MenuMobileExternalLink
-                      key={idx}
-                      content={navigationItem.label}
-                      href={navigationItem.url}
-                    />
-                  )
-                })}
-            </MenuMobileLinkContainer>
           </PanelMenu>
         </PanelContainer>
       </>

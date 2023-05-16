@@ -23,12 +23,16 @@ export interface IModerable {
   _id?: string
 }
 
-/*****************************************************************
- *            Algolia Locations
- ****************************************************************/
-// algolia doesn't provide typings so taken from
-// https://community.algolia.com/places/documentation.html
-// implementation contains more fields but assumed not relevant
+export type UserMention = {
+  username: string
+  location: string
+}
+
+export type Collaborator = {
+  countryCode?: string | null
+  userName: string
+  isVerified: boolean
+}
 
 export interface ILocation {
   name: string

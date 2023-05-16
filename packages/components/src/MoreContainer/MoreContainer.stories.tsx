@@ -1,9 +1,9 @@
-import type { ComponentStory, ComponentMeta } from '@storybook/react'
+import type { StoryFn, Meta } from '@storybook/react'
 import { MoreContainer } from './MoreContainer'
 import { Heading, Flex } from 'theme-ui'
 
 export default {
-  title: 'Base Components/MoreContainer',
+  title: 'Components/MoreContainer',
   component: MoreContainer,
   parameters: {
     layout: 'padded',
@@ -15,9 +15,9 @@ export default {
       ],
     },
   },
-} as ComponentMeta<typeof MoreContainer>
+} as Meta<typeof MoreContainer>
 
-export const Default: ComponentStory<typeof MoreContainer> = () => (
+export const Default: StoryFn<typeof MoreContainer> = () => (
   <MoreContainer m={'0 auto'} pt={60} pb={90}>
     <Flex
       sx={{

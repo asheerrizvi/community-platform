@@ -3,17 +3,19 @@ import { Field } from 'react-final-form'
 import { Heading, Flex, Box, Text } from 'theme-ui'
 import { countries } from 'countries-list'
 import { Button, FieldInput, FieldTextarea } from 'oa-components'
-import theme from 'src/themes/styled.theme'
+// TODO: Remove direct usage of Theme
+import { preciousPlasticTheme } from 'oa-themes'
+const theme = preciousPlasticTheme.styles
 import { FieldArray } from 'react-final-form-arrays'
-import { ProfileLinkField } from './Fields/Link.field'
+import { ProfileLinkField } from './Fields/ProfileLink.field'
 import { FlexSectionContainer } from './elements'
 import { required } from 'src/utils/validators'
-import type { IUserPP } from 'src/models/user_pp.models'
-import { ImageInputField } from 'src/components/Form/ImageInput.field'
+import type { IUserPP } from 'src/models/userPreciousPlastic.models'
+import { ImageInputField } from 'src/common/Form/ImageInput.field'
 import type { IUser } from 'src/models'
 import type { IUploadedFileMeta } from 'src/stores/storage'
-import { ProfileType } from 'src/modules/profile'
-import { SelectField } from 'src/components/Form/Select.field'
+import { ProfileType } from 'src/modules/profile/types'
+import { SelectField } from 'src/common/Form/Select.field'
 
 interface IProps {
   formValues: IUserPP
@@ -26,7 +28,7 @@ interface IState {
   showNotification?: boolean
 }
 
-const CoverImages = ({
+export const CoverImages = ({
   isMemberProfile,
   coverImages,
 }: {
@@ -40,8 +42,8 @@ const CoverImages = ({
       </Text>
       <Box
         sx={{
-          height: '150px',
-          width: '150px',
+          height: '190px',
+          width: '190px',
         }}
         m="10px"
         data-cy="cover-image"
@@ -190,7 +192,7 @@ export class UserInfosSection extends React.Component<IProps, IState> {
               coverImages={coverImages}
             />
           </Flex>
-          <>
+          <Box data-cy="UserInfos: links">
             <Flex sx={{ alignItems: 'center', width: '100%', wrap: 'nowrap' }}>
               <Text mb={2} mt={7} sx={{ fontSize: 2 }}>
                 Contacts & links *
@@ -199,16 +201,19 @@ export class UserInfosSection extends React.Component<IProps, IState> {
             <FieldArray name="links" initialValue={links}>
               {({ fields }) => (
                 <>
-                  {fields.map((name, i: number) => (
-                    <ProfileLinkField
-                      key={name}
-                      name={name}
-                      onDelete={() => {
-                        fields.remove(i)
-                      }}
-                      index={i}
-                    />
-                  ))}
+                  {fields
+                    ? fields.map((name, i: number) => (
+                        <ProfileLinkField
+                          key={fields.value[i].key}
+                          name={name}
+                          onDelete={() => {
+                            fields.remove(i)
+                          }}
+                          index={i}
+                          isDeleteEnabled={i > 0 || (fields as any).length > 1}
+                        />
+                      ))
+                    : null}
                   <Button
                     type="button"
                     data-cy="add-link"
@@ -223,7 +228,7 @@ export class UserInfosSection extends React.Component<IProps, IState> {
                 </>
               )}
             </FieldArray>
-          </>
+          </Box>
         </Box>
       </FlexSectionContainer>
     )

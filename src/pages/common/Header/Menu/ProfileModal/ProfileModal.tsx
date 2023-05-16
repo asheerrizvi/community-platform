@@ -5,8 +5,10 @@ import type { UserStore } from 'src/stores/User/user.store'
 import { inject, observer } from 'mobx-react'
 import { COMMUNITY_PAGES_PROFILE } from 'src/pages/PageList'
 import { NavLink } from 'react-router-dom'
-import theme from 'src/themes/styled.theme'
-import { AuthWrapper } from '../../../../../components/Auth/AuthWrapper'
+// TODO: Remove direct usage of Theme
+import { preciousPlasticTheme } from 'oa-themes'
+const theme = preciousPlasticTheme.styles
+import { AuthWrapper } from '../../../../../common/AuthWrapper'
 
 interface IProps {
   username: string
@@ -33,6 +35,7 @@ const ModalContainerInner = styled(Box)`
   background: white;
   border: 2px solid black;
   border-radius: 5px;
+  overflow: hidden;
 `
 
 const ModalLink = styled(NavLink)`
@@ -45,24 +48,34 @@ const ModalLink = styled(NavLink)`
   width: 100%;
   max-width: 100%;
   max-height: 100%;
-  &:focus div {
-    color: ${theme.colors.blue};
-  }
-  &:hover {
-    background-color: ${theme.colors.background};
-  }
-  &:active div {
-    color: ${theme.colors.blue};
-  }
+
+  &:hover,
+  &:focus,
+  &:active,
   &.current {
-    background-color: ${theme.colors.white};
-    color: ${theme.colors.blue};
+    background-color: ${theme.colors.background};
   }
 `
 
 ModalLink.defaultProps = {
   activeClassName: 'current',
 }
+
+const LogoutButton = styled.button`
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  text-align: inherit;
+  padding: 10px 30px 10px 30px;
+  width: 100%;
+  background: inherit;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${theme.colors.background};
+  }
+`
 
 @inject('userStore')
 @observer
@@ -87,26 +100,22 @@ export class ProfileModal extends React.Component<IProps> {
         <ModalContainerInner>
           <Flex>
             <ModalLink to={'/u/' + username} data-cy="menu-Profile">
-              <Flex>Profile</Flex>
+              Profile
             </ModalLink>
           </Flex>
           {COMMUNITY_PAGES_PROFILE.map((page) => (
             <AuthWrapper roleRequired={page.requiredRole} key={page.path}>
               <Flex>
                 <ModalLink to={page.path} data-cy={`menu-${page.title}`}>
-                  <Flex>{page.title}</Flex>
+                  {page.title}
                 </ModalLink>
               </Flex>
             </AuthWrapper>
           ))}
           <Flex>
-            <ModalLink
-              onClick={() => this.logout()}
-              to={window.location.pathname}
-              data-cy="menu-Logout"
-            >
-              <Flex>Log out</Flex>
-            </ModalLink>
+            <LogoutButton onClick={() => this.logout()} data-cy="menu-Logout">
+              Log out
+            </LogoutButton>
           </Flex>
         </ModalContainerInner>
       </ModalContainer>

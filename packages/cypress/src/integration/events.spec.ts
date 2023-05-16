@@ -1,3 +1,8 @@
+import {
+  SingaporeStubResponse,
+  SingaporeReverseStubResponse,
+} from '../fixtures/searchResults'
+
 describe('[Events]', () => {
   beforeEach(() => {
     // navigate to events page and wait for data load
@@ -16,18 +21,16 @@ describe('[Events]', () => {
       cy.get('button').contains('More Events').should('not.visible')
 
       cy.step(`Basic info of an event is shown`)
-      cy.get('[data-cy=card]:has(:contains(SURA BAYA Exhibition))').within(
-        () => {
-          cy.contains('18').should('be.exist')
-          cy.contains('Aug').should('be.exist')
-          cy.contains('SURA BAYA Exhibition').should('be.exist')
-          cy.contains('By event_creator').should('be.exist')
-          cy.contains('East Java').should('be.exist')
-          cy.get('a[target=_blank]')
-            .should('have.attr', 'href')
-            .and('eq', 'https://www.instagram.com/p/B1N6zVUjj0M/')
-        },
-      )
+      cy.get('[data-cy=card]:contains(SURA BAYA Exhibition)').within(() => {
+        cy.contains('18').should('be.exist')
+        cy.contains('Aug').should('be.exist')
+        cy.contains('SURA BAYA Exhibition').should('be.exist')
+        cy.contains('event_creator').should('be.exist')
+        cy.contains('East Java').should('be.exist')
+        cy.get('a[target=_blank]')
+          .should('have.attr', 'href')
+          .and('eq', 'https://www.instagram.com/p/B1N6zVUjj0M/')
+      })
     })
 
     it('[By Authenticated]', () => {
@@ -65,10 +68,10 @@ describe('[Events]', () => {
 
   describe('[Create an event]', () => {
     it('[By Authenticated]', () => {
+      cy.interceptAddressSearchFetch(SingaporeStubResponse)
+      cy.interceptAddressReverseFetch(SingaporeReverseStubResponse)
+
       cy.login('event_creator@test.com', 'test1234')
-      // as click event changes depending on logged in state wait to ensure button updated
-      // TODO - better to bind attribute to button depending on logged in state to search for
-      cy.wait(2000)
       cy.get('[data-cy=create-event]').click()
 
       cy.step('Fill up mandatory info')
@@ -83,18 +86,25 @@ describe('[Events]', () => {
         )}-${String(d.getUTCDate()).padStart(2, '0')}`,
       )
       cy.selectTag('event_testing')
-      cy.get('[data-cy="osm-geocoding-input"]').type('Atucucho')
+      cy.get('[data-cy="osm-geocoding-input"]').type('singapo')
       cy.get('[data-cy="osm-geocoding-results"]')
-        .find('li:eq(0)', { timeout: 10000 })
-        .click()
+      cy.wait('@fetchAddress').then(() => {
+        cy.get('[data-cy="osm-geocoding-results"]').find('li:eq(0)').click()
+      })
       // cy.get('[data-cy=tag-select]').click()
       cy.get('[data-cy=url]')
         .type('https://www.meetup.com/pt-BR/cities/br/rio_de_janeiro/')
         .blur()
 
       cy.step('Publish the event')
+
       cy.get('[data-cy=submit]').should('not.be.disabled').click()
+
+      // Wait for event to be posted
+      cy.wait(3000)
+
       cy.step('The new event is shown in /events')
+
       cy.get('[data-cy=card]')
         .contains('Create a test event')
         .should('be.exist')

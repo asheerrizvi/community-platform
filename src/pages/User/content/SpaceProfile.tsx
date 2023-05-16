@@ -3,17 +3,19 @@ import type {
   IMAchineBuilderXp,
   IOpeningHours,
   PlasticTypeLabel,
-} from 'src/models/user_pp.models'
+} from 'src/models/userPreciousPlastic.models'
 
-import { Heading, Box, Image, Flex, Text } from 'theme-ui'
+import { Heading, Box, Image, Flex, Paragraph } from 'theme-ui'
 // import slick and styles
 import Slider from 'react-slick'
 import 'src/assets/css/slick.min.css'
 import styled from '@emotion/styled'
 
-import { MemberBadge, Icon, FlagIcon } from 'oa-components'
+import { MemberBadge, Icon, Username, UserStatistics } from 'oa-components'
 
-import theme from 'src/themes/styled.theme'
+// TODO: Remove direct usage of Theme
+import { preciousPlasticTheme } from 'oa-themes'
+const theme = preciousPlasticTheme.styles
 
 // Plastic types
 import HDPEIcon from 'src/assets/images/plastic-types/hdpe.svg'
@@ -29,10 +31,11 @@ import PVCIcon from 'src/assets/images/plastic-types/pvc.svg'
 import type { IUploadedFileMeta } from 'src/stores/storage'
 import type { IConvertedFileMeta } from 'src/types'
 
-import { UserStats } from './UserStats'
 import UserContactAndLinks from './UserContactAndLinks'
 import { UserAdmin } from './UserAdmin'
-import { ProfileType } from 'src/modules/profile'
+import { ProfileType } from 'src/modules/profile/types'
+import { isUserVerified } from 'src/common/isUserVerified'
+import { useUserUsefulCount } from 'src/common/hooks/userUsefulCount'
 
 interface IBackgroundImageProps {
   bgImg: string
@@ -44,11 +47,16 @@ interface IProps {
 
 const MobileBadge = styled.div`
   position: relative;
-  max-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin-bottom: 0;
 
+  @media only screen and (min-width: ${theme.breakpoints[1]}) {
+    align-items: center;
+  }
+
   @media only screen and (min-width: ${theme.breakpoints[2]}) {
-    max-width: 150px;
     margin-top: -50%;
     margin-left: auto;
     margin-right: auto;
@@ -83,12 +91,6 @@ const PlasticType = styled.div`
   &:last-child {
     margin-right: 0;
   }
-`
-
-const ProfileContentWrapper = styled(Flex)`
-  background-color: ${theme.colors.white};
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
 `
 
 const SliderImage = styled.div`
@@ -147,8 +149,8 @@ const sliderSettings = {
 
 // Comment on 6.05.20 by BG : renderCommitmentBox commented for now, will be reused with #974
 
-function renderPlasticTypes(plasticTypes: Array<PlasticTypeLabel>) {
-  function renderIcon(type: string) {
+const renderPlasticTypes = (plasticTypes: Array<PlasticTypeLabel>) => {
+  const renderIcon = (type: string) => {
     switch (type) {
       case 'hdpe':
         return <Image loading="lazy" src={HDPEIcon} />
@@ -185,35 +187,31 @@ function renderPlasticTypes(plasticTypes: Array<PlasticTypeLabel>) {
   )
 }
 
-function renderOpeningHours(openingHours: Array<IOpeningHours>) {
-  return (
-    <div>
-      <h4>We're open on:</h4>
-      {openingHours.map((openingObj) => {
-        return (
-          <OpeningHours key={openingObj.day}>
-            {openingObj.day}: {openingObj.openFrom} - {openingObj.openTo}
-          </OpeningHours>
-        )
-      })}
-    </div>
-  )
-}
+const renderOpeningHours = (openingHours: Array<IOpeningHours>) => (
+  <div>
+    <h4>We're open on:</h4>
+    {openingHours.map((openingObj) => {
+      return (
+        <OpeningHours key={openingObj.day}>
+          {openingObj.day}: {openingObj.openFrom} - {openingObj.openTo}
+        </OpeningHours>
+      )
+    })}
+  </div>
+)
 
-function renderMachineBuilderXp(machineBuilderXp: Array<IMAchineBuilderXp>) {
-  return (
-    <>
-      <h4>We offer the following services:</h4>
-      {machineBuilderXp.map((machineExperience, index) => {
-        return (
-          <MachineExperienceTab key={`machineXp-${index}`}>
-            {machineExperience}
-          </MachineExperienceTab>
-        )
-      })}
-    </>
-  )
-}
+const renderMachineBuilderXp = (machineBuilderXp: Array<IMAchineBuilderXp>) => (
+  <>
+    <h4>We offer the following services:</h4>
+    {machineBuilderXp.map((machineExperience, index) => {
+      return (
+        <MachineExperienceTab key={`machineXp-${index}`}>
+          {machineExperience}
+        </MachineExperienceTab>
+      )
+    })}
+  </>
+)
 
 export const SpaceProfile = ({ user }: IProps) => {
   let coverImage = [
@@ -241,14 +239,21 @@ export const SpaceProfile = ({ user }: IProps) => {
   )
 
   const userCountryCode =
-    user.location?.countryCode || user.country?.toLowerCase() || null
+    user.location?.countryCode || user.country?.toLowerCase() || undefined
 
   return (
-    <ProfileWrapper mt={4} mb={6}>
+    <ProfileWrapper mt={4} mb={6} data-cy="SpaceProfile">
       <ProfileWrapperCarousel>
         <Slider {...sliderSettings}>{coverImage}</Slider>
       </ProfileWrapperCarousel>
-      <ProfileContentWrapper px={[2, 4]} py={4}>
+      <Flex
+        sx={{
+          px: [2, 4],
+          py: 4,
+          background: 'white',
+          borderTop: '2px solid',
+        }}
+      >
         <Box sx={{ width: ['100%', '100%', '80%'] }}>
           <Box sx={{ display: ['block', 'block', 'none'] }}>
             <MobileBadge>
@@ -262,23 +267,13 @@ export const SpaceProfile = ({ user }: IProps) => {
               pt: ['0', '40px', '0'],
             }}
           >
-            {userCountryCode && (
-              <FlagIcon
-                mr={2}
-                code={userCountryCode}
-                style={{ display: 'inline-block' }}
-              />
-            )}
-            <Text
-              my={2}
-              sx={{
-                color: `${theme.colors.lightgrey} !important`,
-                fontSize: 3,
+            <Username
+              user={{
+                userName: user.userName,
+                countryCode: userCountryCode,
               }}
-              data-cy="userName"
-            >
-              {user.userName}
-            </Text>
+              isVerified={isUserVerified(user.userName)}
+            />
           </Flex>
 
           <Flex sx={{ alignItems: 'center' }}>
@@ -291,20 +286,7 @@ export const SpaceProfile = ({ user }: IProps) => {
               {user.displayName}
             </Heading>
           </Flex>
-          {user.about && (
-            <Text
-              mt="0"
-              mb="20px"
-              color={theme.colors.grey}
-              sx={{
-                ...theme.typography.paragraph,
-                width: ['80%', '100%'],
-                whiteSpace: 'pre-line',
-              }}
-            >
-              {user.about}
-            </Text>
-          )}
+          {user.about && <Paragraph>{user.about}</Paragraph>}
 
           {user.profileType === ProfileType.COLLECTION_POINT &&
             user.collectedPlasticTypes &&
@@ -332,10 +314,34 @@ export const SpaceProfile = ({ user }: IProps) => {
           <MobileBadge>
             <MemberBadge size={150} profileType={user.profileType} />
 
-            <UserStats user={user} />
+            <Box
+              sx={{
+                mt: 3,
+              }}
+            >
+              <UserStatistics
+                userName={user.userName}
+                country={user.location?.country}
+                isVerified={isUserVerified(user.userName)}
+                isSupporter={!!user.badges?.supporter}
+                howtoCount={
+                  user.stats
+                    ? Object.keys(user.stats!.userCreatedHowtos).length
+                    : 0
+                }
+                eventCount={
+                  user.stats
+                    ? Object.keys(user.stats!.userCreatedEvents).length
+                    : 0
+                }
+                // ** TODO: Beta-tester Authentication needs to be removed from useUserUsefulCount
+                // ** once aggregations are fixed
+                usefulCount={useUserUsefulCount(user) ?? 0}
+              />
+            </Box>
           </MobileBadge>
         </Box>
-      </ProfileContentWrapper>
+      </Flex>
     </ProfileWrapper>
   )
 }

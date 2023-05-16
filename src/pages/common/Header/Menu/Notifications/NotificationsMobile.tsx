@@ -1,9 +1,12 @@
-import theme from 'src/themes/styled.theme'
-import styled from '@emotion/styled'
-import { Box } from 'theme-ui'
-import type { UserNotificationList } from 'oa-components'
 import { NotificationList } from 'oa-components'
+// TODO: Remove direct usage of Theme
+import { preciousPlasticTheme } from 'oa-themes'
+const theme = preciousPlasticTheme.styles
+import { Box } from 'theme-ui'
 
+import styled from '@emotion/styled'
+
+import type { UserNotificationList } from 'oa-components'
 const PanelContainer = styled(Box)`
   width: 100%;
   position: absolute;
@@ -31,26 +34,22 @@ export const PanelItem = styled(Box as any)`
   padding: ${theme.space[3]}px 0px;
 `
 
-export const MenuMobileLinkContainer = styled(Box as any)`
-  border-top: 1px solid ${theme.colors.lightgrey};
-  border-bottom: 1px solid ${theme.colors.lightgrey};
-  margin-top: 5px;
-`
-
 export interface Props {
   notifications: UserNotificationList
-  handleOnClick: () => void
+  markAllRead: () => void
+  markAllNotified: () => void
 }
 
 export const NotificationsMobile = (props: Props) => {
-  const { notifications, handleOnClick } = props
+  const { notifications, markAllRead, markAllNotified } = props
 
   return (
     <PanelContainer>
       <PanelMenu>
         <NotificationList
           notifications={notifications}
-          handleOnClick={() => handleOnClick && handleOnClick()}
+          markAllNotified={markAllNotified}
+          markAllRead={() => markAllRead && markAllRead()}
           sx={{
             position: 'absolute',
             left: 1,

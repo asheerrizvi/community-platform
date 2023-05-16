@@ -8,12 +8,11 @@ import type {
   IHowtoFormInput,
   IHowtoStep,
   IHowToStepFormInput,
-  IComment,
 } from 'src/models/howto.models'
-import type { ISelectedTags } from 'src/models/tags.model'
-import type { IUser } from 'src/models/user.models'
+import type { IComment, IUser } from 'src/models'
 import {
   filterModerableItems,
+  formatLowerNoSpecial,
   hasAdminRights,
   needsModeration,
   randomID,
@@ -23,6 +22,10 @@ import { ModuleStore } from '../common/module.store'
 import type { IUploadedFileMeta } from '../storage'
 import { MAX_COMMENT_LENGTH } from 'src/constants'
 import { logger } from 'src/logger'
+import {
+  changeMentionToUserReference,
+  changeUserReferenceToPlainText,
+} from '../common/mentions'
 
 const COLLECTION_NAME = 'howtos'
 const HOWTO_SEARCH_WEIGHTS = [
@@ -36,11 +39,9 @@ const HOWTO_SEARCH_WEIGHTS = [
 export class HowtoStore extends ModuleStore {
   // we have two property relating to docs that can be observed
   @observable
-  public activeHowto: IHowtoDB | undefined
+  public activeHowto: IHowtoDB | null
   @observable
   public allHowtos: IHowtoDB[]
-  @observable
-  public selectedTags: ISelectedTags
   @observable
   public selectedCategory: string
   @observable
@@ -50,6 +51,16 @@ export class HowtoStore extends ModuleStore {
   @observable
   public uploadStatus: IHowToUploadStatus = getInitialUploadStatus()
 
+  public filterHowtosByCategory = (
+    collection: IHowtoDB[] = [],
+    category: string,
+  ) => {
+    return category
+      ? collection.filter((obj) => {
+          return obj.category?.label === category
+        })
+      : collection
+  }
   constructor(rootStore: RootStore) {
     // call constructor on common ModuleStore (with db endpoint), which automatically fetches all docs at
     // the given endpoint and emits changes as data is retrieved from cache and live collection
@@ -58,7 +69,6 @@ export class HowtoStore extends ModuleStore {
     this.allDocs$.subscribe((docs: IHowtoDB[]) => {
       this.sortHowtosByLatest(docs)
     })
-    this.selectedTags = {}
     this.selectedCategory = ''
     this.searchValue = ''
     this.referrerSource = ''
@@ -82,6 +92,7 @@ export class HowtoStore extends ModuleStore {
       ? this.activeHowto?.comments.map((comment: IComment) => {
           return {
             ...comment,
+            text: changeUserReferenceToPlainText(comment.text),
             isUserVerified:
               !!this.aggregationsStore.aggregations.users_verified?.[
                 comment.creatorName
@@ -92,15 +103,47 @@ export class HowtoStore extends ModuleStore {
   }
 
   @action
+  public removeActiveHowto() {
+    this.activeHowto = null
+  }
+
+  @action
   public async setActiveHowtoBySlug(slug: string) {
     // clear any cached data and then load the new howto
     logger.debug(`setActiveHowtoBySlug:`, { slug })
-    this.activeHowto = undefined
+
+    if (!slug) {
+      this.activeHowto = null
+    }
+
+    let activeHowto: IHowtoDB | null = null
+
     const collection = await this.db
       .collection<IHowto>(COLLECTION_NAME)
       .getWhere('slug', '==', slug)
-    const activeHowto = collection.length > 0 ? collection[0] : undefined
+    activeHowto = collection.length > 0 ? collection[0] : null
     logger.debug('active howto', activeHowto)
+
+    // try previous slugs if slug is not recognized as primary
+    if (!activeHowto) {
+      const collection = await this.db
+        .collection<IHowto>(COLLECTION_NAME)
+        .getWhere('previousSlugs', 'array-contains', slug)
+
+      activeHowto = collection.length > 0 ? collection[0] : null
+    }
+
+    // Change all UserReferences to mentions
+    if (activeHowto) {
+      activeHowto.description = changeUserReferenceToPlainText(
+        activeHowto.description,
+      )
+
+      activeHowto.steps.forEach((step) => {
+        step.text = changeUserReferenceToPlainText(step.text)
+      })
+    }
+
     this.activeHowto = activeHowto
     return activeHowto
   }
@@ -116,8 +159,10 @@ export class HowtoStore extends ModuleStore {
   }
 
   @computed get filteredHowtos() {
-    let howtos = this.filterCollectionByTags(this.allHowtos, this.selectedTags)
-    howtos = this.filterHowtosByCategory(howtos, this.selectedCategory)
+    const howtos = this.filterHowtosByCategory(
+      this.allHowtos,
+      this.selectedCategory,
+    )
     // HACK - ARH - 2019/12/11 filter unaccepted howtos, should be done serverside
     let validHowtos = filterModerableItems(howtos, this.activeUser)
 
@@ -136,7 +181,7 @@ export class HowtoStore extends ModuleStore {
 
   public async incrementDownloadCount(howToID: string) {
     const dbRef = this.db.collection<IHowto>(COLLECTION_NAME).doc(howToID)
-    const howToData = await toJS(dbRef.get())
+    const howToData = await toJS(dbRef.get('server'))
     const totalDownloads = howToData?.total_downloads || 0
 
     if (howToData) {
@@ -145,8 +190,36 @@ export class HowtoStore extends ModuleStore {
         total_downloads: totalDownloads! + 1,
       }
 
-      await dbRef.set(updatedHowto)
+      await dbRef.set(
+        {
+          ...updatedHowto,
+        },
+        { keep_modified_timestamp: true },
+      )
+
       return updatedHowto.total_downloads
+    }
+  }
+
+  public async incrementViewCount(howToID: string) {
+    const dbRef = this.db.collection<IHowto>(COLLECTION_NAME).doc(howToID)
+    const howToData = await toJS(dbRef.get('server'))
+    const totalViews = howToData?.total_views || 0
+
+    if (howToData) {
+      const updatedHowto: IHowto = {
+        ...howToData,
+        total_views: totalViews! + 1,
+      }
+
+      await dbRef.set(
+        {
+          ...updatedHowto,
+        },
+        { keep_modified_timestamp: true },
+      )
+
+      return updatedHowto.total_views
     }
   }
 
@@ -156,10 +229,6 @@ export class HowtoStore extends ModuleStore {
 
   public updateReferrerSource(source: string) {
     this.referrerSource = source
-  }
-
-  public updateSelectedTags(tagKey: ISelectedTags) {
-    this.selectedTags = tagKey
   }
 
   @action
@@ -172,13 +241,25 @@ export class HowtoStore extends ModuleStore {
     if (!hasAdminRights(toJS(this.activeUser))) {
       return false
     }
-    const ref = this.db.collection(COLLECTION_NAME).doc(howto._id)
-    // NOTE CC - 2021-07-06 mobx updates try write to db as observable, so need to convert toJS
-    return ref.set(toJS(howto))
+    return this.updateHowtoItem(toJS(howto))
   }
 
   public needsModeration(howto: IHowto) {
     return needsModeration(howto, toJS(this.activeUser))
+  }
+
+  private async addUserReference(msg: string): Promise<{
+    text: string
+    users: string[]
+  }> {
+    const { text, mentionedUsers: users } = await changeMentionToUserReference(
+      msg,
+      this.userStore,
+    )
+    return {
+      text,
+      users,
+    }
   }
 
   @action
@@ -186,38 +267,133 @@ export class HowtoStore extends ModuleStore {
     try {
       const user = this.activeUser
       const howto = this.activeHowto
-      const comment = text.slice(0, MAX_COMMENT_LENGTH).trim()
-      if (user && howto && comment) {
-        const userCountry = getUserCountry(user)
+      if (user && howto && text) {
         const newComment: IComment = {
           _id: randomID(),
           _created: new Date().toISOString(),
           _creatorId: user._id,
           creatorName: user.userName,
-          creatorCountry: userCountry,
-          text: comment,
+          creatorCountry: getUserCountry(user),
+          text: text.slice(0, MAX_COMMENT_LENGTH).trim(),
         }
+        logger.debug('addComment.newComment', { newComment })
 
-        const updatedHowto: IHowto = {
+        // Update and refresh the active howto
+        const updated = await this.updateHowtoItem({
           ...toJS(howto),
-          comments: howto.comments
-            ? [...toJS(howto.comments), newComment]
-            : [newComment],
-        }
+          comments: [...toJS(howto.comments || []), newComment],
+        })
 
-        const dbRef = this.db
-          .collection<IHowto>(COLLECTION_NAME)
-          .doc(updatedHowto._id)
-
-        await dbRef.set(updatedHowto)
-
-        // Refresh the active howto
-        this.activeHowto = await dbRef.get()
+        await this.setActiveHowtoBySlug(updated?.slug || '')
       }
     } catch (err) {
-      console.error(err)
+      logger.info({ err })
+      logger.error(err)
       throw new Error(err)
     }
+  }
+
+  private async updateHowtoItem(howToItem: IHowto) {
+    const dbRef = this.db.collection<IHowto>(COLLECTION_NAME).doc(howToItem._id)
+
+    logger.debug('updateHowtoItem', {
+      before: this.activeHowto,
+      after: howToItem,
+    })
+
+    const { text: description, users } = await this.addUserReference(
+      howToItem.description,
+    )
+
+    const mentions = users.map((username) => ({
+      username,
+      location: 'description',
+    }))
+
+    const comments = await Promise.all(
+      [...toJS(howToItem.comments || [])].map(async (comment) => {
+        const { text, users } = await this.addUserReference(comment.text)
+        comment.text = text
+
+        users.forEach((username) => {
+          mentions.push({
+            username,
+            location: `comment:${comment._id}`,
+          })
+        })
+
+        return comment
+      }),
+    )
+
+    const steps = await Promise.all(
+      [...toJS(howToItem.steps || [])].map(async (step) => {
+        const { text, users } = await this.addUserReference(step.text)
+
+        users.forEach((username) => {
+          mentions.push({
+            username,
+            location: `step`,
+          })
+        })
+
+        return {
+          ...step,
+          text,
+        }
+      }),
+    )
+
+    if (howToItem.previousSlugs === undefined) {
+      howToItem.previousSlugs = []
+    }
+
+    if (!howToItem.previousSlugs.includes(howToItem.slug)) {
+      howToItem.previousSlugs.push(howToItem.slug)
+    }
+
+    await dbRef.set({
+      ...howToItem,
+      description,
+      comments,
+      mentions,
+      steps,
+    })
+
+    // After successfully updating the database document queue up all the notifications
+    // Should a notification be issued?
+    // - Only if the mention did not exist in the document before.
+    // How do we decide whether a mention existed in the document previously?
+    // - Based on combination of username/location
+    // Location: Where in the document does the mention exist?
+    // - Introduction
+    // - Steps
+    // - Comments
+    const previousMentionsList = howToItem.mentions || []
+    logger.debug(`Mentions:`, {
+      before: previousMentionsList,
+      after: mentions,
+    })
+
+    // Previous mentions
+    const previousMentions = previousMentionsList.map(
+      (mention) => `${mention.username}.${mention.location}`,
+    )
+
+    mentions.forEach((mention) => {
+      if (
+        !previousMentions.includes(`${mention.username}.${mention.location}`)
+      ) {
+        this.userNotificationsStore.triggerNotification(
+          'howto_mention',
+          mention.username,
+          `/how-to/${howToItem.slug}#${mention.location}`,
+        )
+      }
+    })
+
+    const $doc = await dbRef.get()
+    return $doc ? $doc : null
   }
 
   @action
@@ -236,23 +412,15 @@ export class HowtoStore extends ModuleStore {
             .trim()
           comments[commentIndex]._edited = new Date().toISOString()
 
-          const updatedHowto: IHowto = {
+          // Refresh the active howto
+          this.activeHowto = await this.updateHowtoItem({
             ...toJS(howto),
             comments,
-          }
-
-          const dbRef = this.db
-            .collection<IHowto>(COLLECTION_NAME)
-            .doc(updatedHowto._id)
-
-          await dbRef.set(updatedHowto)
-
-          // Refresh the active howto
-          this.activeHowto = await dbRef.get()
+          })
         }
       }
     } catch (err) {
-      console.error(err)
+      logger.error(err)
       throw new Error(err)
     }
   }
@@ -263,44 +431,26 @@ export class HowtoStore extends ModuleStore {
       const howto = this.activeHowto
       const user = this.activeUser
       if (id && howto && user && howto.comments) {
-        const comments = toJS(howto.comments).filter(
-          (comment) => !(comment._creatorId === user._id && comment._id === id),
-        )
-
-        const updatedHowto: IHowto = {
+        // Refresh the active howto with the updated item
+        await this.updateHowtoItem({
           ...toJS(howto),
-          comments,
-        }
+          comments: toJS(howto.comments).filter(
+            (comment) =>
+              !(comment._creatorId === user._id && comment._id === id),
+          ),
+        })
 
-        const dbRef = this.db
-          .collection<IHowto>(COLLECTION_NAME)
-          .doc(updatedHowto._id)
-
-        await dbRef.set(updatedHowto)
-
-        // Refresh the active howto
-        this.activeHowto = await dbRef.get()
+        await this.setActiveHowtoBySlug(howto.slug)
       }
     } catch (err) {
-      console.error(err)
+      logger.error(err)
       throw new Error(err)
     }
   }
 
-  public filterHowtosByCategory = (
-    collection: IHowtoDB[] = [],
-    category: string,
-  ) => {
-    return category
-      ? collection.filter((obj) => {
-          return obj.category?.label === category
-        })
-      : collection
-  }
-
   // upload a new or update an existing how-to
   public async uploadHowTo(values: IHowtoFormInput | IHowtoDB) {
-    logger.debug('uploading howto')
+    logger.debug('uploading howto', { values })
     this.updateUploadStatus('Start')
     // create a reference either to the existing document (if editing) or a new document if creating
     const dbRef = this.db
@@ -310,6 +460,7 @@ export class HowtoStore extends ModuleStore {
 
     // keep comments if doc existed previously
     const existingDoc = await dbRef.get()
+
     const comments =
       existingDoc && existingDoc.comments ? existingDoc.comments : []
 
@@ -319,7 +470,9 @@ export class HowtoStore extends ModuleStore {
       // if cover already uploaded stored as object not array
       // file and step image re-uploads handled in uploadFile script
       let processedCover
-      if (!values.cover_image.hasOwnProperty('downloadUrl')) {
+      if (
+        !Object.prototype.hasOwnProperty.call(values.cover_image, 'downloadUrl')
+      ) {
         processedCover = await this.uploadFileToCollection(
           values.cover_image,
           COLLECTION_NAME,
@@ -342,10 +495,23 @@ export class HowtoStore extends ModuleStore {
       // populate DB
       // redefine howTo based on processing done above (should match stronger typing)
       const userCountry = getUserCountry(user)
+
+      // create previousSlugs based on available slug or title
+      const previousSlugs: string[] = []
+      if (values.slug) {
+        previousSlugs.push(values.slug)
+      } else if (values.title) {
+        const titleToSlug = formatLowerNoSpecial(values.title)
+        previousSlugs.push(titleToSlug)
+      }
+
       const howTo: IHowto = {
+        mentions: [],
+        previousSlugs,
         ...values,
-        _createdBy: values._createdBy ? values._createdBy : user.userName,
         comments,
+
+        _createdBy: values._createdBy ? values._createdBy : user.userName,
         cover_image: processedCover,
         steps: processedSteps,
         fileLink: values.fileLink ?? '',
@@ -367,10 +533,9 @@ export class HowtoStore extends ModuleStore {
 
       logger.debug('populating database', howTo)
       // set the database document
-      await dbRef.set(howTo)
+      this.activeHowto = await this.updateHowtoItem(howTo)
       this.updateUploadStatus('Database')
       logger.debug('post added')
-      this.activeHowto = await dbRef.get()
       // complete
       this.updateUploadStatus('Complete')
     } catch (error) {
@@ -396,7 +561,7 @@ export class HowtoStore extends ModuleStore {
       step.images = imgMeta
       stepsWithImgMeta.push({
         ...step,
-        images: imgMeta.map((f) => {
+        images: (imgMeta || []).map((f) => {
           if (f === undefined) {
             return null
           }
@@ -425,14 +590,11 @@ interface IHowToUploadStatus {
   Complete: boolean
 }
 
-function getInitialUploadStatus() {
-  const status: IHowToUploadStatus = {
-    Start: false,
-    Cover: false,
-    'Step Images': false,
-    Files: false,
-    Database: false,
-    Complete: false,
-  }
-  return status
-}
+const getInitialUploadStatus = (): IHowToUploadStatus => ({
+  Start: false,
+  Cover: false,
+  'Step Images': false,
+  Files: false,
+  Database: false,
+  Complete: false,
+})

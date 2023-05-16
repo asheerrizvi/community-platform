@@ -10,6 +10,9 @@ interface IProps {
   onConfirmation: (reauthPw: string) => void
 }
 export class ProfileDelete extends React.Component<IProps, IState> {
+  static defaultProps: IProps = {
+    onConfirmation: () => null,
+  }
   constructor(props: IProps) {
     super(props)
     this.state = {
@@ -33,13 +36,13 @@ export class ProfileDelete extends React.Component<IProps, IState> {
       <>
         <Button
           icon="delete"
-          variant="tertiary"
+          variant={'outline'}
           my={3}
           onClick={() => this.setState({ showDeleteDialog: true })}
         >
           Delete Profile
         </Button>
-        (
+
         <Modal
           onDidDismiss={() => this.onModalDismiss()}
           isOpen={!!this.state.showDeleteDialog}
@@ -68,7 +71,7 @@ export class ProfileDelete extends React.Component<IProps, IState> {
                     </Button>
                     <Button
                       type="submit"
-                      variant="tertiary"
+                      variant={'outline'}
                       ml={1}
                       disabled={values.password ? false : true}
                     >
@@ -80,12 +83,7 @@ export class ProfileDelete extends React.Component<IProps, IState> {
             }}
           />
         </Modal>
-        )
       </>
     )
-  }
-
-  static defaultProps: IProps = {
-    onConfirmation: () => null,
   }
 }

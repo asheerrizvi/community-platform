@@ -1,7 +1,7 @@
+/** @jsxImportSource theme-ui */
 import styled from '@emotion/styled'
 import type { VerticalAlignProps, SpaceProps } from 'styled-system'
 import { verticalAlign, space } from 'styled-system'
-
 import { MdFileDownload } from '@react-icons/all-files/md/MdFileDownload'
 import { MdAdd } from '@react-icons/all-files/md/MdAdd'
 import { MdCheck } from '@react-icons/all-files/md/MdCheck'
@@ -15,7 +15,6 @@ import { MdAccountCircle } from '@react-icons/all-files/md/MdAccountCircle'
 import { MdLock } from '@react-icons/all-files/md/MdLock'
 import { MdClose } from '@react-icons/all-files/md/MdClose'
 import { MdMoreVert } from '@react-icons/all-files/md/MdMoreVert'
-import { MdComment } from '@react-icons/all-files/md/MdComment'
 import { MdTurnedIn } from '@react-icons/all-files/md/MdTurnedIn'
 import { MdEdit } from '@react-icons/all-files/md/MdEdit'
 import { MdAccessTime } from '@react-icons/all-files/md/MdAccessTime'
@@ -35,6 +34,7 @@ import { FaSignal } from '@react-icons/all-files/fa/FaSignal'
 import { FaFacebookF } from '@react-icons/all-files/fa/FaFacebookF'
 import { FaSlack } from '@react-icons/all-files/fa/FaSlack'
 import { FaInstagram } from '@react-icons/all-files/fa/FaInstagram'
+import { RiFilter2Fill } from '@react-icons/all-files/ri/RiFilter2Fill'
 import { IconContext } from '@react-icons/all-files'
 import { iconMap } from './svgs'
 import { DownloadIcon } from './DownloadIcon'
@@ -45,7 +45,7 @@ interface IGlyphProps {
   glyph: keyof IGlyphs
 }
 
-interface IProps {
+export interface IProps {
   glyph: keyof IGlyphs
   size?: number | string
   marginRight?: string
@@ -72,7 +72,7 @@ export const glyphs: IGlyphs = {
   close: <MdClose />,
   delete: <GoTrashcan />,
   'more-vert': <MdMoreVert />,
-  comment: <MdComment />,
+  comment: iconMap.comment,
   'turned-in': <MdTurnedIn />,
   edit: <MdEdit />,
   time: <MdAccessTime />,
@@ -94,11 +94,20 @@ export const glyphs: IGlyphs = {
   verified: iconMap.verified,
   useful: iconMap.useful,
   thunderbolt: <AiFillThunderbolt />,
+  filter: <RiFilter2Fill />,
+  view: iconMap.view,
+  supporter: iconMap.supporter,
+  'flag-unknown': iconMap.flagUnknown,
+  'social-media': iconMap.socialMedia,
+  website: iconMap.website,
+  bazar: iconMap.bazar,
+  'email-outline': iconMap.emailOutline,
+  discord: iconMap.discord,
 }
 
-type WrapperProps = IProps & VerticalAlignProps & SpaceProps
+export type Props = IProps & VerticalAlignProps & SpaceProps
 
-const IconWrapper = styled.div<WrapperProps>`
+const IconWrapper = styled.div<Props>`
   display: inline-block;
   flex: 0 0 ${(props) => (props.size ? `${props.size}px` : '32px')};
   width: ${(props) => (props.size ? `${props.size}px` : '32px')};
@@ -106,15 +115,12 @@ const IconWrapper = styled.div<WrapperProps>`
   min-width: ${(props) => (props.size ? `${props.size}px` : '32px')};
   min-height: ${(props) => (props.size ? `${props.size}px` : '32px')};
   position: relative;
-  color: ${(props) => (props.color ? `${props.color}` : 'inherit')};
-  ${verticalAlign}
-  ${space}
-
-  ${(props) =>
+  ${verticalAlign} ${space}
+    ${(props) =>
     props.onClick &&
     `
     cursor: pointer;
-  `}
+  `};
 `
 
 const sizeMap = {
@@ -129,7 +135,7 @@ const Glyph = ({ glyph }: IGlyphProps) => {
   return glyphs[glyph] || null
 }
 
-export const Icon = (props: WrapperProps) => {
+export const Icon = (props: Props) => {
   const { glyph, size, marginRight } = props
 
   const isSizeNumeric = !isNaN(size as any)
@@ -144,7 +150,12 @@ export const Icon = (props: WrapperProps) => {
   }
 
   return (
-    <IconWrapper {...props} size={definedSize} style={{ marginRight }}>
+    <IconWrapper
+      {...props}
+      sx={{ color: props.color ?? 'inherit' }}
+      size={definedSize}
+      style={{ marginRight }}
+    >
       <IconContext.Provider
         value={{
           style: { width: definedSize + 'px', height: definedSize + 'px' },

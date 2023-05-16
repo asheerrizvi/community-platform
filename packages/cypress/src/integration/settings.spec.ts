@@ -1,6 +1,7 @@
-import { DbCollectionName } from '../utils/test-utils'
+import { DbCollectionName } from '../utils/TestUtils'
 import { UserMenuItem } from '../support/commands'
-import { IUser } from '../../../../src/models/user.models'
+import type { IUser } from '../../../../src/models/user.models'
+import { SingaporeStubResponse } from '../fixtures/searchResults'
 
 interface Info {
   username: string
@@ -33,16 +34,17 @@ describe('[Settings]', () => {
   const setWorkspaceMapPin = (mapPin: IMapPin) => {
     cy.step('Update Workspace Map section')
     cy.get('[data-cy=pin-description]').clear().type(mapPin.description)
-    cy.get('[data-cy=location-search]')
-      .find(':text')
-      .clear()
-      .type(mapPin.searchKeyword)
-    cy.get('[data-cy=location-search]')
-      .find('.ap-suggestion:eq(0)', { timeout: 10000 })
-      .click()
-    cy.get('[data-cy=location-search]')
-      .find('input')
-      .should('have.value', mapPin.locationName)
+    cy.get('[data-cy="osm-geocoding-input"]').clear().type(mapPin.searchKeyword)
+    cy.get('[data-cy="osm-geocoding-results"]')
+    cy.wait('@fetchAddress').then(() => {
+      cy.get('[data-cy="osm-geocoding-results"]').find('li:eq(0)').click()
+    })
+
+    cy.get('[data-cy="osm-geocoding-input"]').should(($input) => {
+      const val = $input.val()
+
+      expect(val).to.include(mapPin.locationName)
+    })
   }
 
   const setMemberMapPin = (mapPin: IMapPin) => {
@@ -50,11 +52,12 @@ describe('[Settings]', () => {
     cy.get('[data-cy=pin-description]').clear().type(mapPin.description)
     cy.get('[data-cy="osm-geocoding-input"]').clear().type(mapPin.searchKeyword)
     cy.get('[data-cy="osm-geocoding-results"]')
-      .find('li:eq(0)', { timeout: 10000 })
-      .click()
+    cy.wait('@fetchAddress').then(() => {
+      cy.get('[data-cy="osm-geocoding-results"]').find('li:eq(0)').click()
+    })
   }
 
-  const addContactLink = (link: ILink) => {
+  const addContactLink = (link: Omit<ILink, 'key'>) => {
     if (link.index > 0) {
       // click the button to add another set of input fields
       cy.get('[data-cy=add-link]').click()
@@ -64,6 +67,7 @@ describe('[Settings]', () => {
     // input the corresponding value
     cy.get(`[data-cy=input-link-${link.index}]`).clear().type(link.url)
   }
+
   describe('[Focus Workplace]', () => {
     const freshSettings = {
       _authID: 'l9N5HFHzSjQvtP9g9MyFnPpkFmM2',
@@ -99,16 +103,13 @@ describe('[Settings]', () => {
         },
       ],
       location: {
-        administrative: 'Ohio',
-        country: 'United States of America',
-        countryCode: 'us',
-        latlng: {
-          lat: 39.9623,
-          lng: -83.0007,
-        },
-        name: 'Columbus',
-        postcode: '43085',
-        value: 'Columbus, Ohio, United States of America',
+        administrative: 'Central',
+        country: 'Singapore',
+        countryCode: 'sg',
+        latlng: { lng: '103.8194992', lat: '1.357107' },
+        name: 'Drongo Trail, Bishan, Singapore, Central, 578774, Singapore',
+        postcode: '578774',
+        value: 'Singapore',
       },
       mapPinDescription: "Come in & let's make cool stuff out of plastic!",
       profileType: 'workspace',
@@ -142,14 +143,15 @@ describe('[Settings]', () => {
         url: `http://www.${freshSettings.userName}.com`,
       })
 
+      cy.interceptAddressSearchFetch(SingaporeStubResponse)
       setWorkspaceMapPin({
         description: expected.mapPinDescription,
-        searchKeyword: 'ohio',
+        searchKeyword: 'Singapo',
         locationName: expected.location.value,
       })
 
       cy.get('[data-cy=save]').click()
-      cy.wait(2000)
+      cy.wait(3000)
       cy.get('[data-cy=save]').should('not.be.disabled')
       cy.step('Verify if all changes were saved correctly')
       cy.queryDocuments(
@@ -167,7 +169,7 @@ describe('[Settings]', () => {
     })
   })
 
-  describe.only('[Focus Member]', () => {
+  describe('[Focus Member]', () => {
     const freshSettings = {
       _authID: 'pbx4jStD8sNj4OEZTg4AegLTl6E3',
       _id: 'settings_member_new',
@@ -204,6 +206,34 @@ describe('[Settings]', () => {
         },
       ],
     }
+    it('[Cancel edit profile without confirmation dialog]', () => {
+      cy.login('settings_member_new@test.com', 'test1234')
+      cy.step('Go to User Settings')
+      cy.clickMenuItem(UserMenuItem.Settings)
+      cy.step('Click on How to')
+      cy.on('window:confirm', () => {
+        throw new Error('Confirm dialog should not be called.')
+      })
+      cy.get('[data-cy=page-link]').contains('How-to').click()
+      cy.step('Confirm log should NOT appear')
+    })
+
+    it('[Cancel edit profile and get confirmation]', (done) => {
+      cy.login('settings_member_new@test.com', 'test1234')
+      cy.step('Go to User Settings')
+      cy.clickMenuItem(UserMenuItem.Settings)
+      cy.get('[data-cy=username').clear().type('Wrong user')
+      cy.step('Click on How to')
+      cy.get('[data-cy=page-link]').contains('How-to').click()
+      cy.step('Confirm log should log')
+      cy.on('window:confirm', (text) => {
+        expect(text).to.eq(
+          'You are leaving this page without saving. Do you want to continue ?',
+        )
+        done()
+      })
+    })
+
     it('[Edit a new profile]', () => {
       cy.login('settings_member_new@test.com', 'test1234')
       cy.step('Go to User Settings')
@@ -224,7 +254,7 @@ describe('[Settings]', () => {
       })
 
       cy.get('[data-cy=save]').click()
-      cy.wait(2000)
+      cy.wait(3000)
       cy.get('[data-cy=save]').should('not.be.disabled')
       cy.queryDocuments(
         DbCollectionName.users,
@@ -270,16 +300,13 @@ describe('[Settings]', () => {
         ],
         mapPinDescription: 'Fun, vibrant and full of amazing people',
         location: {
-          administrative: null,
+          administrative: 'Central',
           country: 'Singapore',
           countryCode: 'sg',
-          latlng: {
-            lat: 1.29048,
-            lng: 103.852,
-          },
-          name: 'Singapore',
-          postcode: '178957',
-          value: 'Singapore, Singapore',
+          latlng: { lng: '103.8194992', lat: '1.357107' },
+          name: 'Drongo Trail, Bishan, Singapore, Central, 578774, Singapore',
+          postcode: '578774',
+          value: 'Singapore',
         },
       }
       cy.login('settings_member_new@test.com', 'test1234')
@@ -304,9 +331,10 @@ describe('[Settings]', () => {
         url: `${freshSettings.userName}@test.com`,
       })
 
+      cy.interceptAddressSearchFetch(SingaporeStubResponse)
       setMemberMapPin({
         description: expected.mapPinDescription,
-        searchKeyword: 'singapo',
+        searchKeyword: 'Singapo',
         locationName: expected.location.value,
       })
       cy.get('[data-cy=location-dropdown]').should('not.exist')
@@ -328,6 +356,50 @@ describe('[Settings]', () => {
         cy.wrap(null)
           .then(() => docs[0])
           .should('eqSettings', expected)
+      })
+    })
+
+    it('[Edit Contact and Links]', () => {
+      cy.login('settings_member_new@test.com', 'test1234')
+      cy.step('Go to User Settings')
+      cy.clickMenuItem(UserMenuItem.Settings)
+
+      addContactLink({
+        index: 1,
+        label: 'social media',
+        url: 'https://social.network',
+      })
+
+      // Remove first item
+      cy.get('[data-cy="delete-link-0"]').last().trigger('click')
+
+      cy.get('[data-cy="Confirm.modal: Modal"]').should('be.visible')
+
+      cy.get('[data-cy="Confirm.modal: Confirm"]').trigger('click')
+
+      cy.get('[data-cy=save]').click()
+      cy.get('[data-cy=save]').should('not.be.disabled')
+
+      // Assert
+      cy.queryDocuments(
+        DbCollectionName.users,
+        'userName',
+        '==',
+        expected.userName,
+      ).then((docs) => {
+        cy.log('queryDocs', docs)
+        expect(docs.length).to.equal(1)
+        cy.wrap(null)
+          .then(() => docs[0])
+          .should('eqSettings', {
+            ...expected,
+            links: [
+              {
+                label: 'social media',
+                url: 'https://social.network',
+              },
+            ],
+          })
       })
     })
   })
@@ -358,16 +430,13 @@ describe('[Settings]', () => {
         },
       ],
       location: {
-        administrative: null,
+        administrative: 'Central',
         country: 'Singapore',
         countryCode: 'sg',
-        latlng: {
-          lat: 1.29048,
-          lng: 103.852,
-        },
-        name: 'Singapore',
-        postcode: '178957',
-        value: 'Singapore, Singapore',
+        latlng: { lng: '103.8194992', lat: '1.357107' },
+        name: 'Drongo Trail, Bishan, Singapore, Central, 578774, Singapore',
+        postcode: '578774',
+        value: 'Singapore',
       },
       mapPinDescription: 'Informative workshop on machines every week',
       machineBuilderXp: ['electronics', 'welding'],
@@ -395,6 +464,8 @@ describe('[Settings]', () => {
         label: 'bazar',
         url: `http://settings_machine_bazarlink.com`,
       })
+
+      cy.interceptAddressSearchFetch(SingaporeStubResponse)
       setWorkspaceMapPin({
         description: expected.mapPinDescription,
         searchKeyword: 'singapo',
@@ -402,7 +473,7 @@ describe('[Settings]', () => {
       })
 
       cy.get('[data-cy=save]').click()
-      cy.wait(2000)
+      cy.wait(3000)
       cy.get('[data-cy=save]').should('not.be.disabled')
       cy.queryDocuments(
         DbCollectionName.users,
@@ -446,16 +517,13 @@ describe('[Settings]', () => {
         },
       ],
       location: {
-        administrative: 'England',
-        country: 'United Kingdom',
-        countryCode: 'gb',
-        latlng: {
-          lat: 51.5073,
-          lng: -0.127647,
-        },
-        name: 'City of London',
-        postcode: 'EC1A',
-        value: 'City of London, England, United Kingdom',
+        administrative: 'Central',
+        country: 'Singapore',
+        countryCode: 'sg',
+        latlng: { lng: '103.8194992', lat: '1.357107' },
+        name: 'Drongo Trail, Bishan, Singapore, Central, 578774, Singapore',
+        postcode: '578774',
+        value: 'Singapore',
       },
     }
 
@@ -476,14 +544,15 @@ describe('[Settings]', () => {
         addContactLink({ index, label: 'website', url: link.url }),
       )
 
+      cy.interceptAddressSearchFetch(SingaporeStubResponse)
       setWorkspaceMapPin({
         description: expected.mapPinDescription,
-        searchKeyword: 'london, city of',
+        searchKeyword: 'Singa',
         locationName: expected.location.value,
       })
 
       cy.get('[data-cy=save]').click()
-      cy.wait(2000)
+      cy.wait(3000)
       cy.get('[data-cy=save]').should('not.be.disabled')
       cy.queryDocuments(
         DbCollectionName.users,
@@ -539,16 +608,13 @@ describe('[Settings]', () => {
         },
       ],
       location: {
-        administrative: 'Melaka',
-        country: 'Malaysia',
-        countryCode: 'my',
-        latlng: {
-          lat: 2.19082,
-          lng: 102.256,
-        },
-        name: 'Malacca',
-        postcode: '75000',
-        value: 'Malacca, Melaka, Malaysia',
+        administrative: 'Central',
+        country: 'Singapore',
+        countryCode: 'sg',
+        latlng: { lng: '103.8194992', lat: '1.357107' },
+        name: 'Drongo Trail, Bishan, Singapore, Central, 578774, Singapore',
+        postcode: '578774',
+        value: 'Singapore',
       },
       mapPinDescription: 'Feed us plastic!',
       openingHours: [
@@ -665,13 +731,14 @@ describe('[Settings]', () => {
       cy.get('[data-cy=plastic-pvc]').click()
       cy.get('[data-cy=plastic-other]').click()
 
+      cy.interceptAddressSearchFetch(SingaporeStubResponse)
       setWorkspaceMapPin({
         description: expected.mapPinDescription,
-        searchKeyword: 'Malacca',
+        searchKeyword: 'Singapo',
         locationName: expected.location.value,
       })
       cy.get('[data-cy=save]').click()
-      cy.wait(2000)
+      cy.wait(3000)
       cy.get('[data-cy=save]').should('not.be.disabled')
       cy.queryDocuments(
         DbCollectionName.users,

@@ -1,3 +1,4 @@
+/* global module */
 module.exports = {
   mainSidebar: [
     {
@@ -9,8 +10,8 @@ module.exports = {
       type: 'category',
       label: 'How To Contribute',
       items: [
+        'Contributing/start-contributing',
         'Contributing/bounties',
-        'Contributing/maintainer',
         {
           type: 'category',
           label: 'Writing Documentation',
@@ -43,6 +44,7 @@ module.exports = {
         'Backend Development/firebase-emulators-docker',
         'Backend Development/firestore-backup',
         'Backend Development/integrations',
+        'Backend Development/tests',
       ],
     },
     {
@@ -78,6 +80,22 @@ module.exports = {
       type: 'doc',
       label: 'Security',
       id: 'Security',
+    },
+    {
+      type: 'category',
+      label: 'Maintainers',
+      items: [
+        {
+          type: 'doc',
+          label: 'Overview',
+          id: 'Maintainers/overview',
+        },
+        {
+          type: 'doc',
+          label: 'Onboarding',
+          id: 'Maintainers/onboarding',
+        },
+      ],
     },
     {
       type: 'link',

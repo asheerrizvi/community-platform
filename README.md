@@ -3,7 +3,7 @@
 [![GitHub license](https://badgen.net/github/license/ONEARMY/community-platform)](https://github.com/ONEARMY/community-platform/blob/master/LICENSE)
 [![GitHub license](https://badgen.net/github/tag/ONEARMY/community-platform)](https://github.com/ONEARMY/community-platform/blob/master/LICENSE)
 [![GitHub contributors](https://img.shields.io/github/contributors/ONEARMY/community-platform)](https://github.com/ONEARMY/community-platform/graphs/contributors/)
-[![discord](https://badges.aleen42.com/src/discord.svg)](https://discord.gg/up3nBbEbxY)
+[![discord](https://badges.aleen42.com/src/discord.svg)](https://discord.gg/gJ7Yyk4)
 
 # 🔗 &nbsp; tl;dr Quick Links
 
@@ -44,7 +44,7 @@ Please make sure to read the [Contributing Guide](/CONTRIBUTING.md) before makin
 It also covers lots of handy additional information such as setting up a local server, or finding [good first issues](https://github.com/ONEARMY/community-platform/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3A%22Good+first+issue%22++label%3A%22Help+wanted%22+) to work on.
 
 If needed you can [drop us a line here](mailto:platform@onearmy.earth?subject=contact%20from%20github) 👋
-Or join our [Discord channel](https://discordapp.com/invite/rnx7m4t)
+Or join our [Discord channel](https://discord.gg/gJ7Yyk4)
 
 ## Contributors ✨
 
@@ -55,20 +55,42 @@ Thanks go to these wonderful people ([emoji key](https://allcontributors.org/doc
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
 <table>
-  <tr>
-    <td align="center"><a href="http://davehakkens.nl"><img src="https://avatars.githubusercontent.com/u/13672737?v=4?s=60" width="60px;" alt=""/><br /><sub><b>Dave Hakkens</b></sub></a><br /><a href="#design-davehakkens" title="Design">🎨</a> <a href="#ideas-davehakkens" title="Ideas, Planning, & Feedback">🤔</a> <a href="#projectManagement-davehakkens" title="Project Management">📆</a> <a href="[💪]("Maintainer")," title="Maintainer">💪</a></td>
-    <td align="center"><a href="https://c2dev.co.uk/"><img src="https://avatars.githubusercontent.com/u/10515065?v=4?s=60" width="60px;" alt=""/><br /><sub><b>Chris Clarke</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=chrismclarke" title="Code">💻</a> <a href="[💪]("Maintainer")," title="Maintainer">💪</a></td>
-    <td align="center"><a href="https://thisis.la/"><img src="https://avatars.githubusercontent.com/u/472589?v=4?s=60" width="60px;" alt=""/><br /><sub><b>Luke Watts</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=thisislawatts" title="Code">💻</a> <a href="[💪]("Maintainer")," title="Maintainer">💪</a></td>
-    <td align="center"><a href="https://github.com/amuroBosetti"><img src="https://avatars.githubusercontent.com/u/46928545?v=4?s=60" width="60px;" alt=""/><br /><sub><b>Mauro Bosetti</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=amuroBosetti" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/patrycjapraczyk"><img src="https://avatars.githubusercontent.com/u/35103888?v=4?s=60" width="60px;" alt=""/><br /><sub><b>patrycjapraczyk</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=patrycjapraczyk" title="Code">💻</a></td>
-    <td align="center"><a href="https://tedspare.com"><img src="https://avatars.githubusercontent.com/u/36117635?v=4?s=60" width="60px;" alt=""/><br /><sub><b>Ted Spare</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=tedspare" title="Code">💻</a></td>
-    <td align="center"><a href="https://www.linkedin.com/in/eliasvelardez"><img src="https://avatars.githubusercontent.com/u/40184787?v=4?s=60" width="60px;" alt=""/><br /><sub><b>Elias Velardez</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=eliasvelardezft" title="Code">💻</a></td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://medium.com/@Alfonso_Ghislieri"><img src="https://avatars.githubusercontent.com/u/652368?v=4?s=60" width="60px;" alt=""/><br /><sub><b>Alfonso</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=AlfonsoGhislieri" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/Xyli0"><img src="https://avatars.githubusercontent.com/u/10441748?v=4?s=60" width="60px;" alt=""/><br /><sub><b>Xyli0</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=Xyli0" title="Code">💻</a></td>
-    <td align="center"><a href="http://www.linkedin.com/in/laianbraum"><img src="https://avatars.githubusercontent.com/u/61033391?v=4?s=60" width="60px;" alt=""/><br /><sub><b>Laian Braum</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=laianbraum" title="Code">💻</a></td>
-  </tr>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="http://davehakkens.nl"><img src="https://avatars.githubusercontent.com/u/13672737?v=4?s=60" width="60px;" alt="Dave Hakkens"/><br /><sub><b>Dave Hakkens</b></sub></a><br /><a href="#design-davehakkens" title="Design">🎨</a> <a href="#ideas-davehakkens" title="Ideas, Planning, & Feedback">🤔</a> <a href="#projectManagement-davehakkens" title="Project Management">📆</a> <a href="[💪]("Maintainer")," title="Maintainer">💪</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://c2dev.co.uk/"><img src="https://avatars.githubusercontent.com/u/10515065?v=4?s=60" width="60px;" alt="Chris Clarke"/><br /><sub><b>Chris Clarke</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=chrismclarke" title="Code">💻</a> <a href="[💪]("Maintainer")," title="Maintainer">💪</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://thisis.la/"><img src="https://avatars.githubusercontent.com/u/472589?v=4?s=60" width="60px;" alt="Luke Watts"/><br /><sub><b>Luke Watts</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=thisislawatts" title="Code">💻</a> <a href="[💪]("Maintainer")," title="Maintainer">💪</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/amuroBosetti"><img src="https://avatars.githubusercontent.com/u/46928545?v=4?s=60" width="60px;" alt="Mauro Bosetti"/><br /><sub><b>Mauro Bosetti</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=amuroBosetti" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/patrycjapraczyk"><img src="https://avatars.githubusercontent.com/u/35103888?v=4?s=60" width="60px;" alt="patrycjapraczyk"/><br /><sub><b>patrycjapraczyk</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=patrycjapraczyk" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://tedspare.com"><img src="https://avatars.githubusercontent.com/u/36117635?v=4?s=60" width="60px;" alt="Ted Spare"/><br /><sub><b>Ted Spare</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=tedspare" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/eliasvelardez"><img src="https://avatars.githubusercontent.com/u/40184787?v=4?s=60" width="60px;" alt="Elias Velardez"/><br /><sub><b>Elias Velardez</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=eliasvelardezft" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/AlfonsoGhislieri"><img src="https://avatars.githubusercontent.com/u/652368?v=4?s=60" width="60px;" alt="Alfonso"/><br /><sub><b>Alfonso</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=AlfonsoGhislieri" title="Code">💻</a> <a href="[💪]("Maintainer")," title="Maintainer">💪</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Xyli0"><img src="https://avatars.githubusercontent.com/u/10441748?v=4?s=60" width="60px;" alt="Xyli0"/><br /><sub><b>Xyli0</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=Xyli0" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.linkedin.com/in/laianbraum"><img src="https://avatars.githubusercontent.com/u/61033391?v=4?s=60" width="60px;" alt="Laian Braum"/><br /><sub><b>Laian Braum</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=laianbraum" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/osouthwell-scottlogic"><img src="https://avatars.githubusercontent.com/u/98388720?v=4?s=60" width="60px;" alt="osouthwell-scottlogic"/><br /><sub><b>osouthwell-scottlogic</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=osouthwell-scottlogic" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://asheerrizvi.com"><img src="https://avatars.githubusercontent.com/u/17976252?v=4?s=60" width="60px;" alt="Asheer Rizvi"/><br /><sub><b>Asheer Rizvi</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=asheerrizvi" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://franknoirot.co"><img src="https://avatars.githubusercontent.com/u/23481541?v=4?s=60" width="60px;" alt="Frank Noirot"/><br /><sub><b>Frank Noirot</b></sub></a><br /><a href="#design-franknoirot" title="Design">🎨</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/LucasGabrielBecker"><img src="https://avatars.githubusercontent.com/u/48301172?v=4?s=60" width="60px;" alt="Lucas Becker "/><br /><sub><b>Lucas Becker </b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=LucasGabrielBecker" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/cschilbe"><img src="https://avatars.githubusercontent.com/u/485557?v=4?s=60" width="60px;" alt="Conrad Schilbe"/><br /><sub><b>Conrad Schilbe</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=cschilbe" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ThakurKarthik"><img src="https://avatars.githubusercontent.com/u/26309938?v=4?s=60" width="60px;" alt="Thakur Karthik"/><br /><sub><b>Thakur Karthik</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=ThakurKarthik" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/danitrod/"><img src="https://avatars.githubusercontent.com/u/45438149?v=4?s=60" width="60px;" alt="Daniel T. Rodrigues"/><br /><sub><b>Daniel T. Rodrigues</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=danitrod" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/adrianduke"><img src="https://avatars.githubusercontent.com/u/711058?v=4?s=60" width="60px;" alt="Adrian Duke"/><br /><sub><b>Adrian Duke</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=adrianduke" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/missalyss"><img src="https://avatars.githubusercontent.com/u/19866110?v=4?s=60" width="60px;" alt="Alyssa Helgason"/><br /><sub><b>Alyssa Helgason</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=missalyss" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kiebert"><img src="https://avatars.githubusercontent.com/u/3414938?v=4?s=60" width="60px;" alt="Kieb"/><br /><sub><b>Kieb</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=Kiebert" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Sc4ramouche"><img src="https://avatars.githubusercontent.com/u/25829136?v=4?s=60" width="60px;" alt="Kovechenkov Vladislav"/><br /><sub><b>Kovechenkov Vladislav</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=Sc4ramouche" title="Code">💻</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="http://devtato.com"><img src="https://avatars.githubusercontent.com/u/4504330?v=4?s=60" width="60px;" alt="Devtato"/><br /><sub><b>Devtato</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=cerkiewny" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/NoHara42"><img src="https://avatars.githubusercontent.com/u/43496778?v=4?s=60" width="60px;" alt="Ned O'Hara"/><br /><sub><b>Ned O'Hara</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=NoHara42" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/SophXN"><img src="https://avatars.githubusercontent.com/u/80185757?v=4?s=60" width="60px;" alt="Sophia Nguyen"/><br /><sub><b>Sophia Nguyen</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=SophXN" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.evakillenberg.com"><img src="https://avatars.githubusercontent.com/u/37253846?v=4?s=60" width="60px;" alt="Eva Killenberg"/><br /><sub><b>Eva Killenberg</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=evakill" title="Code">💻</a> <a href="[💪]("Maintainer")," title="Maintainer">💪</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://speckledbanana.com"><img src="https://avatars.githubusercontent.com/u/80723794?v=4?s=60" width="60px;" alt="Sean Thompson"/><br /><sub><b>Sean Thompson</b></sub></a><br /><a href="https://github.com/ONEARMY/community-platform/commits?author=iSCJT" title="Code">💻</a> <a href="[💪]("Maintainer")," title="Maintainer">💪</a></td>
+    </tr>
+  </tbody>
 </table>
 
 <!-- markdownlint-restore -->

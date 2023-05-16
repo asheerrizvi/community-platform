@@ -1,25 +1,30 @@
-import { Card, Text, Flex } from 'theme-ui'
+import { Card, Text, Flex, Image } from 'theme-ui'
 import {
   Button,
   FlagIconEvents,
   ExternalLink,
   ModerationStatus,
+  CategoryTag,
+  Username,
 } from 'oa-components'
-import TagDisplay from 'src/components/Tags/TagDisplay/TagDisplay'
 import type { IEvent } from '../../../models/events.models'
 import { getMonth, getDay, capitalizeFirstLetter } from 'src/utils/helpers'
-import { VerifiedUserBadge } from '../../../components/VerifiedUserBadge/VerifiedUserBadge'
-import { useTheme } from '@emotion/react'
+import laptopIcon from 'src/assets/icons/icon-laptop.png'
+import { isUserVerified } from 'src/common/isUserVerified'
 
 interface IProps {
   event: IEvent
   isPastEvent?: boolean
   needsModeration: boolean
   moderateEvent: (event: IEvent, accepted: boolean) => void
+  tags:
+    | {
+        label: string
+      }[]
+    | undefined
 }
 
 export const EventCard = (props: IProps) => {
-  const theme = useTheme()
   return (
     <Card mt={4} key={props.event.slug}>
       <Flex
@@ -89,16 +94,15 @@ export const EventCard = (props: IProps) => {
               {capitalizeFirstLetter(props.event.title)}
             </Text>
           </Flex>
-          <Flex>
-            <Text sx={{ width: '100%', ...theme.typography.auxiliary }}>
-              By {props.event._createdBy}
-            </Text>
-            <VerifiedUserBadge
-              userId={props.event._createdBy}
-              width="16px"
-              height="16px"
+          <div>
+            <Username
+              user={{
+                userName: props.event._createdBy,
+                countryCode: '',
+              }}
+              isVerified={isUserVerified(props.event._createdBy)}
             />
-          </Flex>
+          </div>
         </Flex>
         <Flex
           sx={{
@@ -109,18 +113,26 @@ export const EventCard = (props: IProps) => {
           }}
           mb={[2, 2, 0]}
         >
-          <FlagIconEvents code={props.event.location.countryCode} />
-          <Text
-            sx={{ width: '100%', ...theme.typography.auxiliary }}
-            ml={[1, 1, 2]}
-          >
-            {[
-              props.event.location.administrative,
-              props.event.location?.countryCode?.toUpperCase(),
-            ]
-              .filter(Boolean)
-              .join(', ')}
-          </Text>
+          {props.event?.isDigital ? (
+            <>
+              <Image src={laptopIcon} alt="" width="36px" />
+              <Text variant="auxiliary" sx={{ width: '100%' }} ml={[1, 1, 2]}>
+                Digital
+              </Text>
+            </>
+          ) : (
+            <>
+              <FlagIconEvents code={props.event.location.countryCode} />
+              <Text variant="auxiliary" sx={{ width: '100%' }} ml={[1, 1, 2]}>
+                {[
+                  props.event.location.administrative,
+                  props.event.location?.countryCode?.toUpperCase(),
+                ]
+                  .filter(Boolean)
+                  .join(', ')}
+              </Text>
+            </>
+          )}
         </Flex>
         <Flex
           sx={{
@@ -132,10 +144,7 @@ export const EventCard = (props: IProps) => {
           }}
           mb={[2, 2, 0]}
         >
-          {props.event.tags &&
-            Object.keys(props.event.tags).map((tag) => {
-              return <TagDisplay key={tag} tagKey={tag} />
-            })}
+          {props.tags?.map((t, idx) => t && <CategoryTag key={idx} tag={t} />)}
         </Flex>
         {props.needsModeration && (
           <Flex
@@ -145,7 +154,7 @@ export const EventCard = (props: IProps) => {
               flexWrap: 'nowrap',
               order: [5, 5, 5],
             }}
-            ml={2}
+            mx={2}
           >
             <Button
               small
@@ -154,16 +163,22 @@ export const EventCard = (props: IProps) => {
               icon="check"
               mr={1}
               sx={{ height: '30px' }}
+              showIconOnly={true}
               onClick={() => props.moderateEvent(props.event, true)}
-            />
+            >
+              Approve
+            </Button>
             <Button
               small
               data-cy="reject-pin"
-              variant={'tertiary'}
+              variant={'outline'}
+              showIconOnly={true}
               icon="delete"
               sx={{ height: '30px' }}
               onClick={() => props.moderateEvent(props.event, false)}
-            />
+            >
+              Reject
+            </Button>
           </Flex>
         )}
         <Flex
@@ -181,9 +196,9 @@ export const EventCard = (props: IProps) => {
             sx={{ width: '100%' }}
           >
             <Text
+              variant="auxiliary"
               sx={{
                 width: '100%',
-                ...theme.typography.auxiliary,
                 textAlign: 'right',
               }}
             >
